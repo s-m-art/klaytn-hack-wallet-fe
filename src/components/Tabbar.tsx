@@ -1,5 +1,5 @@
-import React from 'react';
-import {Image, Text, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
+import {Text, TouchableOpacity, View} from 'react-native';
 import styles from './index.styles';
 
 import AccountIconActive from '../../assets/icons/cards.svg';
@@ -11,6 +11,7 @@ import PairingIconActive from '../../assets/icons/group.svg';
 import PairingIcon from '../../assets/icons/group-no-active.svg';
 import SettingIconActive from '../../assets/icons/setting-2.svg';
 import SettingIcon from '../../assets/icons/setting-2-no-active.svg';
+import {ROUTES_BAR} from '../constants';
 
 interface Props {
   navigation: any;
@@ -19,30 +20,30 @@ interface Props {
 const TAB_CONTENTS = [
   {
     id: 1,
-    title: 'Account',
+    title: ROUTES_BAR.ACCOUNT,
     iconActive: <AccountIconActive width={24} height={24} />,
     icon: <AccountIcon width={24} height={24} />,
   },
   {
-    title: 'Sessions',
+    title: ROUTES_BAR.SESSIONS,
     iconActive: <SessionIconActive width={24} height={24} />,
     icon: <SessionIcon width={24} height={24} />,
     id: 2,
   },
   {
-    title: '',
+    title: ROUTES_BAR.WALLET,
     iconActive: <ScanIcon width={32} height={32} />,
     icon: <ScanIcon width={32} height={32} />,
     id: 3,
   },
   {
-    title: 'Pairing',
+    title: ROUTES_BAR.PAIRING,
     iconActive: <PairingIconActive width={24} height={24} />,
     icon: <PairingIcon width={24} height={24} />,
     id: 4,
   },
   {
-    title: 'Settings',
+    title: ROUTES_BAR.SETTINGS,
     iconActive: <SettingIconActive width={24} height={24} />,
     icon: <SettingIcon width={24} height={24} />,
     id: 5,
@@ -50,23 +51,33 @@ const TAB_CONTENTS = [
 ];
 
 export function MyTabBar({navigation}: Props) {
+  const [indexSelected, setIndexSelected] = useState(0);
+
   return (
     <View style={styles.container}>
-      {TAB_CONTENTS.map(item => (
-        <TouchableOpacity key={item.id}>
-          <View style={styles.itemTab}>
-            {item.icon}
-            <Text>{item.title}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-      {/* <Button
-        title="Go somewhere"
-        onPress={() => {
-          // Navigate using the `navigation` prop that you received
-          navigation.navigate('SomeScreen');
-        }}
-      /> */}
+      {TAB_CONTENTS.map((item, index) => {
+        let isSelected = indexSelected === index;
+        let middleTab = index === 2;
+        let icon = isSelected ? item.iconActive : item.icon;
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              setIndexSelected(index);
+              navigation.navigate(item.title);
+            }}
+            key={item.id}>
+            <View style={styles.itemTab}>
+              {middleTab ? <View style={styles.middleIcon}>{icon}</View> : icon}
+              {!!item.title && !middleTab && (
+                <Text
+                  style={isSelected ? styles.textSelected : styles.textTitle}>
+                  {item.title}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }

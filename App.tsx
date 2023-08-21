@@ -5,18 +5,26 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Home from './src/screens/Home';
 import {createStackNavigator} from '@react-navigation/stack';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
-import {ROUTES} from './src/constants';
+import {ROUTES, ROUTES_BAR} from './src/constants';
+import DetailTxn from './src/screens/DetailTxn/DetailTxn';
+import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 
 const Stack = createStackNavigator();
 
 function App(): JSX.Element {
   const isSignedIn = true;
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 3000);
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -24,15 +32,20 @@ function App(): JSX.Element {
           headerShown: false,
         }}
         initialRouteName="SignIn">
-        {isSignedIn ? (
-          <>
-            <Stack.Screen name={ROUTES.HOME} component={Home} />
-          </>
+        {!loading ? (
+          isSignedIn ? (
+            <>
+              <Stack.Screen name={ROUTES.HOME} component={Home} />
+              <Stack.Screen name={ROUTES_BAR.DETAIL} component={DetailTxn} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name={ROUTES.SIGN_IN} component={SignIn} />
+              <Stack.Screen name={ROUTES.SIGN_UP} component={SignUp} />
+            </>
+          )
         ) : (
-          <>
-            <Stack.Screen name={ROUTES.SIGN_IN} component={SignIn} />
-            <Stack.Screen name={ROUTES.SIGN_UP} component={SignUp} />
-          </>
+          <Stack.Screen name={ROUTES.SPLASH} component={SplashScreen} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

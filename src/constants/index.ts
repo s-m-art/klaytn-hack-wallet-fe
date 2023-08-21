@@ -2,6 +2,7 @@ const ROUTES = {
   HOME: 'home',
   SIGN_IN: 'signIn',
   SIGN_UP: 'signUp',
+  SPLASH: 'splash',
 };
 
 const ROUTES_BAR = {
@@ -10,6 +11,7 @@ const ROUTES_BAR = {
   WALLET: 'Wallet',
   PAIRING: 'Pairing',
   SETTINGS: 'Settings',
+  DETAIL: 'Detail',
 };
 
 export {ROUTES, ROUTES_BAR};

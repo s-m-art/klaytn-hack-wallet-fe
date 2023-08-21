@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-function Account() {
+function Pairing() {
   return (
     <View
       style={{
@@ -10,9 +10,9 @@ function Account() {
         justifyContent: 'center',
         backgroundColor: 'red',
       }}>
-      <Text>Account Screen</Text>
+      <Text>Pairing Screen</Text>
     </View>
   );
 }
 
-export default Account;
+export default Pairing;
