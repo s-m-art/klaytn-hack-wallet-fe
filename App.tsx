@@ -16,7 +16,7 @@ import {ROUTES} from './src/constants';
 const Stack = createStackNavigator();
 
 function App(): JSX.Element {
-  const isSignedIn = true;
+  const isSignedIn = false;
   return (
     <NavigationContainer>
       <Stack.Navigator
