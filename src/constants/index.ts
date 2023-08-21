@@ -3,6 +3,7 @@ const ROUTES = {
   SIGN_IN: 'signIn',
   SIGN_UP: 'signUp',
   SPLASH: 'splash',
+  SEND: 'send',
 };
 
 const ROUTES_BAR = {

@@ -7,7 +7,6 @@ import {ROUTES_BAR} from '../constants';
 import Sessions from './Sessions/Sessions';
 import Pairing from './Pairing';
 import Settings from './Setting';
-import DetailTxn from './DetailTxn/DetailTxn';
 
 const Tab = createBottomTabNavigator();
 

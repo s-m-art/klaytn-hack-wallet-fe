@@ -10,7 +10,7 @@ interface Props {
 function Account({navigation}: Props) {
   return (
     <View style={styles.container}>
-      <TopAccount />
+      <TopAccount navigation={navigation} />
       <ListTxn navigation={navigation} />
     </View>
   );

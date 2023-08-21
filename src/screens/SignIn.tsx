@@ -8,9 +8,10 @@ import {COLOR} from '../../styles/color';
 import {ROUTES} from '../constants';
 interface Props {
   navigation: any;
+  setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function SignIn({navigation}: Props) {
+function SignIn({navigation, setIsSignIn}: Props) {
   const [signInInfo, setSignInInfo] = useState({
     username: '',
     password: '',
@@ -25,6 +26,7 @@ function SignIn({navigation}: Props) {
   };
 
   const onSignIn = () => {
+    setIsSignIn(true);
     // TODO: Implement sign in
   };
 

@@ -14,11 +14,12 @@ import SignUp from './src/screens/SignUp';
 import {ROUTES, ROUTES_BAR} from './src/constants';
 import DetailTxn from './src/screens/DetailTxn/DetailTxn';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
+import Send from './src/screens/Send/Send';
 
 const Stack = createStackNavigator();
 
 function App(): JSX.Element {
-  const isSignedIn = true;
+  const [isSignedIn, setIsSignIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,11 +37,14 @@ function App(): JSX.Element {
           isSignedIn ? (
             <>
               <Stack.Screen name={ROUTES.HOME} component={Home} />
+              <Stack.Screen name={ROUTES.SEND} component={Send} />
               <Stack.Screen name={ROUTES_BAR.DETAIL} component={DetailTxn} />
             </>
           ) : (
             <>
-              <Stack.Screen name={ROUTES.SIGN_IN} component={SignIn} />
+              <Stack.Screen name={ROUTES.SIGN_IN}>
+                {props => <SignIn {...props} setIsSignIn={setIsSignIn} />}
+              </Stack.Screen>
               <Stack.Screen name={ROUTES.SIGN_UP} component={SignUp} />
             </>
           )
