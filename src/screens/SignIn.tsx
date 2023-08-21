@@ -1,12 +1,33 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Text, View, Image, Pressable} from 'react-native';
 import CustomInput from '../components/CustomInput/CustomInput';
 import UserIcon from '../../assets/icons/user.svg';
 import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
 import {COLOR} from '../../styles/color';
+import {ROUTES} from '../constants';
+interface Props {
+  navigation: any;
+}
 
-function SignIn() {
+function SignIn({navigation}: Props) {
+  const [signInInfo, setSignInInfo] = useState({
+    username: '',
+    password: '',
+  });
+
+  const onChangeSigninInfo = (field: string, value: string) => {
+    setSignInInfo(prev => ({...prev, [field]: value}));
+  };
+
+  const onSignUp = () => {
+    navigation.navigate(ROUTES.SIGN_UP);
+  };
+
+  const onSignIn = () => {
+    // TODO: Implement sign in
+  };
+
   return (
     <View style={{flex: 1, position: 'relative'}}>
       <Image
@@ -46,12 +67,16 @@ function SignIn() {
               placeHolder="Username"
               LeftAdornment={UserIcon}
               styles={{width: '100%'}}
+              setValue={(text: string) => onChangeSigninInfo('username', text)}
+              value={signInInfo.username}
             />
             <CustomInput
               placeHolder="Password"
               LeftAdornment={LockIcon}
               styles={{width: '100%'}}
               isPassword={true}
+              setValue={(text: string) => onChangeSigninInfo('password', text)}
+              value={signInInfo.password}
             />
           </View>
         </View>
@@ -61,7 +86,8 @@ function SignIn() {
               borderRadius: 100,
               padding: 15,
               backgroundColor: COLOR.orange,
-            }}>
+            }}
+            onPress={onSignIn}>
             <Text
               style={{
                 color: COLOR.light,
@@ -90,7 +116,8 @@ function SignIn() {
                 Don't have an account?
               </Text>
               <Text
-                style={{fontSize: 16, fontWeight: '500', color: COLOR.orange}}>
+                style={{fontSize: 16, fontWeight: '500', color: COLOR.orange}}
+                onPress={onSignUp}>
                 Sign Up
               </Text>
             </View>

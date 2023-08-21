@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useState} from 'react';
 import {TextInput, View} from 'react-native';
 import EyeIcon from '../../../assets/icons/eye.svg';
 
@@ -7,7 +7,8 @@ import {COLOR} from '../../../styles/color';
 
 interface propTypes {
   placeHolder: string;
-  value?: string;
+  value: string;
+  setValue: any;
   isPassword?: boolean;
   error?: boolean;
   errorText?: string;
@@ -16,7 +17,9 @@ interface propTypes {
 }
 
 const CustomInput: FC<propTypes> = props => {
-  const {LeftAdornment} = props;
+  const {LeftAdornment, setValue} = props;
+  const [visibility, setVisibility] = useState(false);
+
   return (
     <View style={{...styles.container, ...props.styles}}>
       <View style={styles.inputLeft}>
@@ -25,9 +28,14 @@ const CustomInput: FC<propTypes> = props => {
           style={styles.input}
           placeholder={props.placeHolder}
           placeholderTextColor={COLOR.neutral_1}
+          value={props.value}
+          secureTextEntry={visibility && props.isPassword}
+          onChangeText={text => setValue(text)}
         />
       </View>
-      {props?.isPassword ? <EyeIcon /> : null}
+      {props?.isPassword ? (
+        <EyeIcon onPress={() => setVisibility(prev => !prev)} />
+      ) : null}
     </View>
   );
 };
