@@ -15,6 +15,7 @@ import {ROUTES, ROUTES_BAR} from './src/constants';
 import DetailTxn from './src/screens/DetailTxn/DetailTxn';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 import Send from './src/screens/Send/Send';
+import Confirm from './src/screens/Confirm/Confirm';
 
 const Stack = createStackNavigator();
 
@@ -39,6 +40,7 @@ function App(): JSX.Element {
               <Stack.Screen name={ROUTES.HOME} component={Home} />
               <Stack.Screen name={ROUTES.SEND} component={Send} />
               <Stack.Screen name={ROUTES_BAR.DETAIL} component={DetailTxn} />
+              <Stack.Screen name={ROUTES.CONFIRM} component={Confirm} />
             </>
           ) : (
             <>

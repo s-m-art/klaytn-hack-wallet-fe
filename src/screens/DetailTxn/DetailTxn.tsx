@@ -5,6 +5,7 @@ import styles from './index.style';
 import {TouchableOpacity} from 'react-native';
 import TxnItem from '../Account/TxnItem';
 import {listTxnMock} from '../Account/mock';
+import Header from '../../components/Header/Header';
 
 interface Props {
   navigation: any;
@@ -17,12 +18,7 @@ function DetailTxn({navigation}: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.TopTier}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.btnGoBack} onPress={goBack}>
-            <Arrow width={24} height={24} />
-          </TouchableOpacity>
-          <Text style={styles.titleHeader}>Details</Text>
-        </View>
+        <Header goBack={goBack} title="Details" />
         <TxnItem item={listTxnMock[0]} />
         <View style={styles.infoWrap}>
           <View style={styles.itemWrap}>

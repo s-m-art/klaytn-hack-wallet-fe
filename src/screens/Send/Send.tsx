@@ -11,6 +11,8 @@ import Card from '../../../assets/icons/empty-wallet.svg';
 import Layer from '../../../assets/icons/Layer_1.svg';
 
 import styles from './index.style';
+import ComboBtn from '../../components/ComboBtn/ComboBtn';
+import {ROUTES} from '../../constants';
 
 interface Props {
   navigation: any;
@@ -20,6 +22,11 @@ const Send = ({navigation}: Props) => {
   const goBack = () => {
     navigation.goBack();
   };
+
+  const goContinue = () => {
+    navigation.navigate(ROUTES.CONFIRM);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.TopTier}>
@@ -71,14 +78,12 @@ const Send = ({navigation}: Props) => {
           />
         </View>
       </View>
-      <View style={styles.wrapBtn}>
-        <TouchableOpacity style={styles.btnCancel}>
-          <Text style={styles.textBtn}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btnConfirm}>
-          <Text style={styles.textBtn}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+      <ComboBtn
+        onCancel={goBack}
+        onConfirm={goContinue}
+        titleCancel="Cancel"
+        titleConfirm="Continue"
+      />
     </View>
   );
 };

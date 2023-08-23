@@ -19,6 +19,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 1000,
     padding: 12,
+    position: 'relative',
   },
   circleITem: {
     width: '100%',
@@ -107,6 +108,42 @@ const styles = StyleSheet.create({
   },
   wrapTxnLeft: {
     flexDirection: 'row',
+  },
+  ldsRipple: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 220,
+    height: 220,
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    transform: [
+      {
+        translateX: -110,
+      },
+      {
+        translateY: -110,
+      },
+    ],
+  },
+  rippleInner: {
+    width: 220,
+    height: 220,
+    borderRadius: 120,
+    borderWidth: 0,
+    borderColor: 'rgba(255, 102, 43, 1)',
+    opacity: 1,
+    shadowColor: 'rgba(255, 102, 43, 1)',
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
+    margin: 2,
+    backgroundColor: 'transparent',
+  },
+  rippleInnerDelayed: {
+    marginLeft: -10,
   },
 });
 

@@ -1,9 +1,10 @@
 const ROUTES = {
-  HOME: 'home',
-  SIGN_IN: 'signIn',
-  SIGN_UP: 'signUp',
-  SPLASH: 'splash',
-  SEND: 'send',
+  HOME: 'Home',
+  SIGN_IN: 'SignIn',
+  SIGN_UP: 'SignUp',
+  SPLASH: 'Splash',
+  SEND: 'Send',
+  CONFIRM: 'Confirm',
 };
 
 const ROUTES_BAR = {
