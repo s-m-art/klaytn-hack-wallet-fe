@@ -16,4 +16,8 @@ const ROUTES_BAR = {
   DETAIL: 'Detail',
 };
 
-export {ROUTES, ROUTES_BAR};
+const STORAGE_KEYS = {
+  ADDRESS_OWNER: 'addressOwner',
+};
+
+export {ROUTES, ROUTES_BAR, STORAGE_KEYS};

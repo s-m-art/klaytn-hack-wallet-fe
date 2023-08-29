@@ -1,11 +1,13 @@
 import React, {useState} from 'react';
-import {Text, View, Image, Pressable} from 'react-native';
+import {Text, View, Image, TouchableOpacity} from 'react-native';
 import CustomInput from '../components/CustomInput/CustomInput';
 import UserIcon from '../../assets/icons/user.svg';
 import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
 import {COLOR} from '../../styles/color';
-import {ROUTES} from '../constants';
+import {ROUTES, STORAGE_KEYS} from '../constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ethers} from 'ethers';
 interface Props {
   navigation: any;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,9 +27,25 @@ function SignIn({navigation, setIsSignIn}: Props) {
     navigation.navigate(ROUTES.SIGN_UP);
   };
 
-  const onSignIn = () => {
-    setIsSignIn(true);
-    // TODO: Implement sign in
+  // const onSignIn = () => {
+  //   setIsSignIn(true);
+  //   // TODO: Implement sign in
+  // };
+  const handleCreateWallet = async () => {
+    try {
+      console.log('hiohihihi');
+
+      let wallet = ethers.Wallet.createRandom();
+      console.log(wallet, 'wallet1');
+
+      // await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, wallet.address);
+      // console.log(wallet, 'wallet');
+
+      // const encryptedJSonKey = await wallet.encrypt(signInInfo.password);
+      // console.log(encryptedJSonKey, 'encryptedJSonKey');
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
 
   return (
@@ -83,13 +101,13 @@ function SignIn({navigation, setIsSignIn}: Props) {
           </View>
         </View>
         <View style={{display: 'flex', gap: 24}}>
-          <Pressable
+          <TouchableOpacity
             style={{
               borderRadius: 100,
               padding: 15,
               backgroundColor: COLOR.orange,
             }}
-            onPress={onSignIn}>
+            onPress={handleCreateWallet}>
             <Text
               style={{
                 color: COLOR.light,
@@ -100,7 +118,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
               }}>
               Log In
             </Text>
-          </Pressable>
+          </TouchableOpacity>
           <View
             style={{
               display: 'flex',
