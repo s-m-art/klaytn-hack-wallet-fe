@@ -12,10 +12,20 @@ const {assetExts, sourceExts} = defaultConfig.resolver;
 const config = {
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer'),
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: false,
+      },
+    }),
   },
   resolver: {
     assetExts: assetExts.filter(ext => ext !== 'svg'),
-    sourceExts: [...sourceExts, 'svg'],
+    sourceExts: [...sourceExts, 'svg', 'jsx', 'js', 'ts', 'tsx', 'cjs'],
+    extraNodeModules: {
+      http: require.resolve('https-browserify'),
+      // crypto: require.resolve('crypto-browserify'),
+    },
   },
 };
 

@@ -1,6 +1,7 @@
 /**
  * @format
  */
+import '@ethersproject/shims';
 import 'text-encoding-polyfill';
 import {AppRegistry} from 'react-native';
 import App from './App';

@@ -4,7 +4,8 @@
  *
  * @format
  */
-
+import '@ethersproject/shims';
+import './global';
 import 'react-native-get-random-values';
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
