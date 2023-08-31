@@ -1,7 +1,7 @@
 import {defaultAbiCoder, hexDataSlice, keccak256} from 'ethers/lib/utils';
 import {Logger} from '@ethersproject/logger';
 
-import {BigNumber, Contract, Signer, Wallet, ethers} from 'ethers';
+import {BigNumber, Contract, Signer, Wallet} from 'ethers';
 import Web3 from 'web3';
 // import {AddressZero, callDataCost, rethrow} from './testutils';
 import {ecsign, toRpcSig, keccak256 as keccak256_buffer} from 'ethereumjs-util';
@@ -11,7 +11,7 @@ import {ecsign, toRpcSig, keccak256 as keccak256_buffer} from 'ethereumjs-util';
 import {UserOperation} from '../constants/UserOperation';
 import {Create2Factory} from './Create2Factory';
 import {AddressZero, callDataCost, rethrow, version} from './operationUtils';
-import {Provider} from '@ethersproject/providers';
+
 const web3 = new Web3();
 
 const logger = new Logger(version);

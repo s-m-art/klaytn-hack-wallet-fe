@@ -18,6 +18,8 @@ const ROUTES_BAR = {
 
 const STORAGE_KEYS = {
   ADDRESS_OWNER: 'addressOwner',
+  SALT: 'salt',
+  ENCRYPT_PRIKEY: 'encryptPrivateKey',
 };
 
 export {ROUTES, ROUTES_BAR, STORAGE_KEYS};

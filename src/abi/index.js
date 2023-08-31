@@ -23,4 +23,27 @@ export const ABI_FUNCTION = {
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  EXEC_FROM_ENTRY_POINT: {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'dest',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'value',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes',
+        name: 'func',
+        type: 'bytes',
+      },
+    ],
+    name: 'execute',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 };

@@ -1,7 +1,7 @@
 import {defaultAbiCoder, hexConcat, keccak256} from 'ethers/lib/utils';
 import {UserOperation} from '../constants/UserOperation';
 import {ethers} from 'ethers';
-import {fillUserOp, getCallData} from './UserOp';
+import {getCallData} from './UserOp';
 import {ABI_FUNCTION} from '../abi/index';
 
 export function packUserOp(op: UserOperation, forSignature = true): string {

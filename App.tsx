@@ -35,26 +35,6 @@ function App(): JSX.Element {
     console.log('Web3WalletSDK initialized:', initialized);
   }, [initialized]);
 
-  useEffect(() => {
-    const checkWallet = async () => {
-      const walletAddress = await AsyncStorage.getItem(
-        STORAGE_KEYS.ADDRESS_OWNER,
-      );
-      if (walletAddress) {
-        setWalletAddress({walletAddress});
-        setIsSignIn(true);
-      } else {
-        setIsSignIn(false);
-
-        // newAccount = null;
-        // let randomWallet = ethers.Wallet.createRandom();
-        // console.log(randomWallet, 'randomWallet');
-      }
-      setLoading(false);
-    };
-    checkWallet();
-  }, []);
-
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -62,7 +42,7 @@ function App(): JSX.Element {
           headerShown: false,
         }}
         initialRouteName="SignIn">
-        {initialized && !loading ? (
+        {initialized ? (
           isSignedIn ? (
             <>
               <Stack.Screen name={ROUTES.HOME} component={Home} />

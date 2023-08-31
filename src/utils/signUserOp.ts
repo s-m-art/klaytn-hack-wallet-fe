@@ -1,10 +1,12 @@
 import {arrayify} from '@ethersproject/bytes';
-import web3 from 'web3';
-import abiCoder from 'web3-eth-abi';
+import Web3 from 'web3';
 import * as ethereumjs from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
+import {utils, BigNumber as BigNum} from 'ethers';
+import {ABI_FUNCTION} from '../abi';
 
 const chainIdDefault = 1001;
+const web3 = new Web3();
 
 function encodeWeb3(typevalues: any, forSignature: any) {
   const types = typevalues.map((typevalue: any) =>
@@ -12,73 +14,83 @@ function encodeWeb3(typevalues: any, forSignature: any) {
   );
   const values = typevalues.map((typevalue: any) =>
     typevalue.type === 'bytes' && forSignature
-      ? web3.utils.keccak256(typevalue.val)
+      ? Web3.utils.keccak256(typevalue.val)
       : typevalue.val,
   );
-  console.log('///////////////////////', abiCoder, '///////////////////');
+  // console.log('///////////////////////', abiCoder, '///////////////////');
 
-  return abiCoder.encodeParameters(types, values);
+  return web3.eth.abi.encodeParameters(types, values);
 }
 
-function packUserOpWeb3(op: any, forSignature = true) {
+export function packUserOpWeb3(op: any, forSignature = true): string {
   if (forSignature) {
-    // lighter signature scheme (must match UserOperation#pack): do encode a zero-length signature, but strip afterwards the appended zero-length value
-    const userOpType = {
-      components: [
-        {type: 'address', name: 'sender'},
-        {type: 'uint256', name: 'nonce'},
-        {type: 'bytes', name: 'initCode'},
-        {type: 'bytes', name: 'callData'},
-        {type: 'uint256', name: 'callGasLimit'},
-        {type: 'uint256', name: 'verificationGasLimit'},
-        {type: 'uint256', name: 'preVerificationGas'},
-        {type: 'uint256', name: 'maxFeePerGas'},
-        {type: 'uint256', name: 'maxPriorityFeePerGas'},
-        {type: 'bytes', name: 'paymasterAndData'},
-        {type: 'bytes', name: 'signature'},
+    return web3.eth.abi.encodeParameters(
+      [
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'bytes32',
       ],
-      name: 'userOp',
-      type: 'tuple',
-    };
-    console.log(abiCoder, 'abiCoder');
-
-    let encoded = abiCoder.encodeParameters(
-      [userOpType],
-      [{...op, signature: '0x'}],
+      [
+        op.sender,
+        op.nonce,
+        Web3.utils.keccak256(op.initCode),
+        Web3.utils.keccak256(op.callData),
+        op.callGasLimit,
+        op.verificationGasLimit,
+        op.preVerificationGas,
+        op.maxFeePerGas,
+        op.maxPriorityFeePerGas,
+        Web3.utils.keccak256(op.paymasterAndData),
+      ],
     );
-    // remove leading word (total length) and trailing word (zero-length signature)
-    encoded = `0x${encoded.slice(66, encoded.length - 64)}`;
-    return encoded;
+  } else {
+    // for the purpose of calculating gas cost encode also signature (and no keccak of bytes)
+    return web3.eth.abi.encodeParameters(
+      [
+        'address',
+        'uint256',
+        'bytes',
+        'bytes',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'bytes',
+        'bytes',
+      ],
+      [
+        op.sender,
+        op.nonce,
+        op.initCode,
+        op.callData,
+        op.callGasLimit,
+        op.verificationGasLimit,
+        op.preVerificationGas,
+        op.maxFeePerGas,
+        op.maxPriorityFeePerGas,
+        op.paymasterAndData,
+        op.signature,
+      ],
+    );
   }
-  const typevalues = [
-    {type: 'address', val: op.sender},
-    {type: 'uint256', val: op.nonce},
-    {type: 'bytes', val: op.initCode},
-    {type: 'bytes', val: op.callData},
-    {type: 'uint256', val: op.callGasLimit},
-    {type: 'uint256', val: op.verificationGasLimit},
-    {type: 'uint256', val: op.preVerificationGas},
-    {type: 'uint256', val: op.maxFeePerGas},
-    {type: 'uint256', val: op.maxPriorityFeePerGas},
-    {type: 'bytes', val: op.paymasterAndData},
-  ];
-  if (!forSignature) {
-    // for the purpose of calculating gas cost, also hash signature
-    typevalues.push({type: 'bytes', val: op.signature});
-  }
-  return encodeWeb3(typevalues, forSignature);
 }
 
 function getRequestIdWeb3(op: any, entryPointAgr: any, chainIdAgr: any) {
-  console.log('00000000000000000000000000000000000');
+  const userOpHash = Web3.utils.keccak256(packUserOpWeb3(op));
 
-  const userOpHash = web3.utils.keccak256(packUserOpWeb3(op, true));
-
-  const enc = abiCoder.encodeParameters(
+  const enc = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'uint256'],
     [userOpHash, entryPointAgr, chainIdAgr],
   );
-  return web3.utils.keccak256(enc);
+  return Web3.utils.keccak256(enc);
 }
 
 export function tnxIdToNonce(tnxId: any) {
@@ -87,16 +99,36 @@ export function tnxIdToNonce(tnxId: any) {
     .toString(10);
 }
 
-export function signUserOpWeb3({
+export async function signUserOpWeb3({
   op,
   privateKey,
   entryPoint,
   chainId = chainIdDefault,
 }: any) {
-  console.log('11111111111111111111111111111111111111111111111');
+  // Define the range
+  const min = new BigNumber(100000);
+  const maxPower = new BigNumber(2).pow(64);
+  const max = maxPower.minus(1); // We subtract 1 to stay within the specified range
 
-  const newOp = {...op, nonce: tnxIdToNonce(op.nonce)};
-  const message = getRequestIdWeb3(newOp, entryPoint, chainId);
+  // Generate a random value between 0 and 1
+  const randomValue = new BigNumber(Math.random());
+  // Scale the random value to the desired range
+  const scaledValue = randomValue.times(max.minus(min)).plus(min);
+
+  // Convert the scaled value to an integer
+  const randomInteger = scaledValue.integerValue(BigNumber.ROUND_FLOOR);
+  const newOp = {
+    ...op,
+    callGasLimit: op.callGasLimit.toString(),
+    maxFeePerGas: op.maxFeePerGas.toString(),
+    verificationGasLimit: utils.hexZeroPad(
+      BigNum.from(op.verificationGasLimit).toHexString(),
+      32,
+    ),
+    nonce: tnxIdToNonce(randomInteger),
+  };
+
+  const message = getRequestIdWeb3({...newOp}, entryPoint, chainId);
 
   const msg1 = Buffer.concat([
     Buffer.from('\x19Ethereum Signed Message:\n32', 'ascii'),
@@ -107,11 +139,18 @@ export function signUserOpWeb3({
     Buffer.from(arrayify(privateKey)),
   );
 
-  // that's equivalent of:  await signer.signMessage(message);
-  // (but without "async"
   const signedMessage1 = ethereumjs.toRpcSig(sig.v, sig.r, sig.s);
+
   return {
     ...newOp,
     signature: signedMessage1,
   };
 }
+
+export const getCallDataEntryPoint = ({value, target, msgDataEncode}: any) => {
+  const msgData = web3.eth.abi.encodeFunctionCall(
+    ABI_FUNCTION.EXEC_FROM_ENTRY_POINT,
+    [target, value, msgDataEncode],
+  );
+  return msgData;
+};

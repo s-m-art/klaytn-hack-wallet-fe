@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, View, Image, TouchableOpacity} from 'react-native';
 import CustomInput from '../components/CustomInput/CustomInput';
 import UserIcon from '../../assets/icons/user.svg';
@@ -7,15 +7,10 @@ import Bg from '../../assets/icons/login-bg.png';
 import {COLOR} from '../../styles/color';
 import {ROUTES, STORAGE_KEYS} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ENV_FACTORY_ADDRESS, ENV_ENTRY_POINT_ADDRESS} from '@env';
 import Web3 from 'web3';
-import factoryAbi from '../abi/SimpleAccountFactory.json';
-import entryPointAbi from '../abi/IEntryPoint.json';
-
-import {AbiItem} from 'web3-utils';
-import {fillUserOp} from '../utils/UserOp';
+import useNumbers from '../hooks/useNumbers';
 import {getAccountInitCode} from '../utils/operationUtils';
-import {signUserOpWeb3} from '../utils/signUserOp';
+
 interface Props {
   navigation: any;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -23,11 +18,12 @@ interface Props {
 let ENV_RPC = 'https://api.baobab.klaytn.net:8651';
 
 function SignIn({navigation, setIsSignIn}: Props) {
-  console.log(ENV_RPC, 'ENV_RPC');
+  const {randomBigNumber} = useNumbers();
+  const [existWallet, setExistWallet] = useState<boolean | null>(null);
+  const [error, setError] = useState<boolean>(false);
 
   const [signInInfo, setSignInInfo] = useState({
-    username: '',
-    password: '',
+    passcode: '',
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,71 +35,65 @@ function SignIn({navigation, setIsSignIn}: Props) {
     navigation.navigate(ROUTES.SIGN_UP);
   };
 
-  function generateRandomUint256() {
-    const web3 = new Web3(ENV_RPC);
-    const randomBigNumber = web3.utils.toBN(web3.utils.randomHex(32)); // 256 bits = 32 bytes
-    return randomBigNumber.toString();
-  }
-
-  // const onSignIn = () => {
-  //   setIsSignIn(true);
-  //   // TODO: Implement sign in
-  // };
   const handleCreateWallet = async () => {
+    if (!signInInfo) {
+      return;
+    }
+    const web3 = new Web3(ENV_RPC);
     try {
-      const web3 = new Web3(ENV_RPC);
-      const newWallet = web3.eth.accounts.create();
-      console.log(newWallet, 'newWallet');
-      console.log(ENV_RPC, 'ENV_RPC');
+      if (existWallet) {
+        const encryptPriKey = await AsyncStorage.getItem(
+          STORAGE_KEYS.ENCRYPT_PRIKEY,
+        );
 
-      // await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, newWallet.address);
-      const encryptPrikey = web3.eth.accounts.encrypt(
-        newWallet.privateKey,
-        signInInfo.password,
-      );
-      const abiFactory: AbiItem[] | any = factoryAbi.abi;
-      const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
-      const salt = 1000; //generateRandomUint256();
-      const factoryContract = new web3.eth.Contract(
-        abiFactory,
-        ENV_FACTORY_ADDRESS,
-      );
-      const entryPointContract = new web3.eth.Contract(
-        abiEntrypoint,
-        ENV_ENTRY_POINT_ADDRESS,
-      );
+        const walletDecrypt = web3.eth.accounts.decrypt(
+          JSON.parse(encryptPriKey || '{}'),
+          signInInfo.passcode,
+        );
+        const {privateKey} = walletDecrypt;
+        if (!privateKey) {
+          setError(true);
+          return;
+        }
+        setIsSignIn(true);
+      } else {
+        const owner = web3.eth.accounts.create();
+        const encryptPrikey = web3.eth.accounts.encrypt(
+          owner.privateKey,
+          signInInfo.passcode,
+        );
+        const m = Date.now();
+        console.log(m);
 
-      const addressValue = await factoryContract.methods
-        .getAddress(newWallet.address, salt)
-        .call();
-
-      const op2 = await fillUserOp(
-        {
-          sender: addressValue,
-          initCode: getAccountInitCode(
-            newWallet.address,
-            ENV_FACTORY_ADDRESS,
-            salt,
-          ),
-          callData: '0x',
-        },
-        entryPointContract,
-      );
-      const chainId = await web3.eth.getChainId();
-      console.log(chainId, 'chainId');
-
-      const userOpSignedWeb3 = signUserOpWeb3({
-        op: {...op2, nonce: 1000},
-        privateKey: newWallet.privateKey,
-        entryPoint: ENV_ENTRY_POINT_ADDRESS,
-        chainId,
-      });
-      console.log(userOpSignedWeb3, 'userOpSignedWeb3');
+        await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
+        await AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber);
+        await AsyncStorage.setItem(
+          STORAGE_KEYS.ENCRYPT_PRIKEY,
+          JSON.stringify(encryptPrikey),
+        );
+        setIsSignIn(true);
+      }
     } catch (error) {
       console.log(error, 'error');
+      setError(true);
     }
+
     setLoading(false);
   };
+
+  useEffect(() => {
+    const checkWallet = async () => {
+      const walletAddress = await AsyncStorage.getItem(
+        STORAGE_KEYS.ADDRESS_OWNER,
+      );
+      if (walletAddress) {
+        setExistWallet(true);
+      } else {
+        setExistWallet(false);
+      }
+    };
+    checkWallet();
+  }, []);
 
   return (
     <View style={{flex: 1, position: 'relative'}}>
@@ -137,25 +127,19 @@ function SignIn({navigation, setIsSignIn}: Props) {
               lineHeight: 50,
               color: COLOR.light,
             }}>
-            {!loading ? 'Log in' : 'loading'}
+            {existWallet ? 'Welcome back' : 'Create New Account'}
           </Text>
           <View style={{display: 'flex', gap: 12, width: '100%'}}>
             <CustomInput
-              placeHolder="Username"
-              LeftAdornment={UserIcon}
-              styles={{width: '100%'}}
-              setValue={(text: string) => onChangeSigninInfo('username', text)}
-              value={signInInfo.username}
-            />
-            <CustomInput
-              placeHolder="Password"
+              placeHolder="Passcode"
               LeftAdornment={LockIcon}
               styles={{width: '100%'}}
               isPassword={true}
-              setValue={(text: string) => onChangeSigninInfo('password', text)}
-              value={signInInfo.password}
+              setValue={(text: string) => onChangeSigninInfo('passcode', text)}
+              value={signInInfo.passcode}
             />
           </View>
+          <View>{error && <Text>Wrong Passcode</Text>}</View>
         </View>
         <View style={{display: 'flex', gap: 24}}>
           <TouchableOpacity
