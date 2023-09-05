@@ -177,54 +177,10 @@ function Home({navigation}) {
         const accountAddress =
           (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
         const salt = (await AsyncStorage.getItem(STORAGE_KEYS.SALT)) || '';
-        const initCode = await getAccountInitCode(
-          address,
-          ENV_FACTORY_ADDRESS,
-          salt,
-        );
-
-        const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
-
-        const entryPointContract = new web3.eth.Contract(
-          abiEntrypoint,
-          ENV_ENTRY_POINT_ADDRESS,
-        );
 
         // check address exist on chain
         const code = await web3.eth.getCode(accountAddress);
         console.log(code, 'code');
-
-        const op2 = await fillUserOp(
-          {
-            sender: accountAddress,
-            initCode: initCode,
-            // maxFeePerGas: '0',
-            // maxPriorityFeePerGas: '0',
-            callData: '0x',
-          },
-          entryPointContract,
-        );
-
-        // Test
-        // const encryptPriKey =
-        //   (await AsyncStorage.getItem(STORAGE_KEYS.ENCRYPT_PRIKEY)) || '';
-        // const walletDecrypt = web3.eth.accounts.decrypt(
-        //   JSON.parse(encryptPriKey || '{}'),
-        //   'Admin123',
-        // );
-
-        // const userOpSignedWeb3 = await signUserOpWeb3({
-        //   op: {
-        //     ...op2,
-        //     nonce: 1000,
-        //   },
-        //   privateKey: walletDecrypt.privateKey,
-        //   entryPoint: ENV_ENTRY_POINT_ADDRESS,
-        //   chainId,
-        // });
-        // console.log(userOpSignedWeb3, 'userOpSignedWeb3');
-
-        console.log(op2, 'op2');
       } catch (error) {
         console.log(error, 'error');
       }

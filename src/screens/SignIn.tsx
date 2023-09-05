@@ -1,21 +1,38 @@
 import React, {useEffect, useState} from 'react';
-import {Text, View, Image, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import CustomInput from '../components/CustomInput/CustomInput';
-import UserIcon from '../../assets/icons/user.svg';
 import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
-import {COLOR} from '../../styles/color';
 import {ROUTES, STORAGE_KEYS} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Web3 from 'web3';
 import useNumbers from '../hooks/useNumbers';
 import {AbiItem} from 'web3-utils';
 import factoryAbi from '../abi/SimpleAccountFactory.json';
-import {ENV_FACTORY_ADDRESS, ENV_RPC} from '@env';
+import {ENV_FACTORY_ADDRESS, ENV_RPC, ENV_ENTRY_POINT_ADDRESS} from '@env';
+import {fillUserOp} from '../utils/UserOp';
+import entryPointAbi from '../abi/IEntryPoint.json';
+import {signUserOpWeb3} from '../utils/signUserOp';
+import {getAccountInitCode} from '../utils/operationUtils';
+import styles from './SignIn.style';
 
 interface Props {
   navigation: any;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface DeployWalletParam {
+  accountAddress: string;
+
+  web3: Web3;
+  privateKey: string;
+  ownerAddress: string;
 }
 
 function SignIn({navigation, setIsSignIn}: Props) {
@@ -26,7 +43,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
   const [signInInfo, setSignInInfo] = useState({
     passcode: '',
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const onChangeSigninInfo = (field: string, value: string) => {
     setSignInInfo(prev => ({...prev, [field]: value}));
@@ -36,7 +53,50 @@ function SignIn({navigation, setIsSignIn}: Props) {
     navigation.navigate(ROUTES.SIGN_UP);
   };
 
+  const deployWallet = async ({
+    accountAddress,
+    web3,
+    privateKey,
+    ownerAddress,
+  }: DeployWalletParam) => {
+    const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
+    const chainId = await web3.eth.getChainId();
+    const entryPointContract = new web3.eth.Contract(
+      abiEntrypoint,
+      ENV_ENTRY_POINT_ADDRESS,
+    );
+
+    const initCode = await getAccountInitCode(
+      ownerAddress,
+      ENV_FACTORY_ADDRESS,
+      randomBigNumber,
+    );
+
+    const op2 = await fillUserOp(
+      {
+        sender: accountAddress,
+        initCode,
+        maxFeePerGas: '0',
+        maxPriorityFeePerGas: '0',
+        callData: '0x',
+      },
+      entryPointContract,
+    );
+
+    const userOpSignedWeb3 = await signUserOpWeb3({
+      op: {
+        ...op2,
+        nonce: 1000,
+      },
+      privateKey,
+      entryPoint: ENV_ENTRY_POINT_ADDRESS,
+      chainId,
+    });
+    console.log(userOpSignedWeb3, 'userOpSignedWeb3');
+  };
+
   const handleCreateWallet = async () => {
+    setLoading(true);
     if (!signInInfo) {
       return;
     }
@@ -59,6 +119,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
         setIsSignIn(true);
       } else {
         const owner = web3.eth.accounts.create();
+
         const encryptPrikey = web3.eth.accounts.encrypt(
           owner.privateKey,
           signInInfo.passcode,
@@ -71,6 +132,19 @@ function SignIn({navigation, setIsSignIn}: Props) {
         const accountAddress = await factoryContract.methods
           .getAddress(owner.address, randomBigNumber)
           .call();
+
+        // check address exist on chain
+        const code = await web3.eth.getCode(accountAddress);
+        console.log(code, 'code');
+        const notDeployed = code === '0x';
+        if (notDeployed) {
+          await deployWallet({
+            accountAddress,
+            ownerAddress: owner.address,
+            privateKey: owner.privateKey,
+            web3,
+          });
+        }
 
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
@@ -99,50 +173,23 @@ function SignIn({navigation, setIsSignIn}: Props) {
       } else {
         setExistWallet(false);
       }
-      // setIsSignIn(true);
     };
     checkWallet();
   }, []);
 
   return (
-    <View style={{flex: 1, position: 'relative'}}>
-      <Image
-        source={Bg}
-        style={{
-          zIndex: -1,
-          position: 'absolute',
-          backgroundColor: COLOR.neutral_3,
-          height: '100%',
-          width: '100%',
-        }}
-      />
-      <View
-        style={{
-          paddingLeft: 20,
-          paddingRight: 20,
-          position: 'absolute',
-          top: '30%',
-          bottom: '5%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          width: '100%',
-        }}>
-        <View style={{width: '100%', gap: 32, display: 'flex'}}>
-          <Text
-            style={{
-              fontSize: 38,
-              fontWeight: '700',
-              lineHeight: 50,
-              color: COLOR.light,
-            }}>
+    <View style={styles.wrapper}>
+      <Image source={Bg} style={styles.img} />
+      <View style={styles.container}>
+        <View style={styles.wrap}>
+          <Text style={styles.text1}>
             {existWallet ? 'Welcome back' : 'Create New Account'}
           </Text>
-          <View style={{display: 'flex', gap: 12, width: '100%'}}>
+          <View style={styles.wrapInput}>
             <CustomInput
               placeHolder="Passcode"
               LeftAdornment={LockIcon}
-              styles={{width: '100%'}}
+              styles={styles.input}
               isPassword={true}
               setValue={(text: string) => onChangeSigninInfo('passcode', text)}
               value={signInInfo.passcode}
@@ -150,44 +197,21 @@ function SignIn({navigation, setIsSignIn}: Props) {
           </View>
           <View>{error && <Text>Wrong Passcode</Text>}</View>
         </View>
-        <View style={{display: 'flex', gap: 24}}>
+        <View style={styles.login}>
           <TouchableOpacity
-            style={{
-              borderRadius: 100,
-              padding: 15,
-              backgroundColor: COLOR.orange,
-            }}
+            disabled={loading}
+            style={styles.btn}
             onPress={handleCreateWallet}>
-            <Text
-              style={{
-                color: COLOR.light,
-                fontWeight: '600',
-                fontSize: 18,
-                textAlign: 'center',
-                marginBottom: 4,
-              }}>
-              Log In
-            </Text>
+            {loading ? (
+              <ActivityIndicator size="large" />
+            ) : (
+              <Text style={styles.loginBtn}>Log In</Text>
+            )}
           </TouchableOpacity>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 2,
-              justifyContent: 'center',
-            }}>
-            <View style={{display: 'flex', flexDirection: 'row', gap: 2}}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: '500',
-                  color: COLOR.neutral_1,
-                }}>
-                Don't have an account?
-              </Text>
-              <Text
-                style={{fontSize: 16, fontWeight: '500', color: COLOR.orange}}
-                onPress={onSignUp}>
+          <View style={styles.wrapBottom}>
+            <View style={styles.wrapTextBottom}>
+              <Text style={styles.dontAcc}>Don't have an account?</Text>
+              <Text style={styles.signUp} onPress={onSignUp}>
                 Sign Up
               </Text>
             </View>
