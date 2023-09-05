@@ -7,7 +7,8 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "buidApk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../"
   },
   "dependencies": {
     "@ethersproject/shims": "^5.7.0",

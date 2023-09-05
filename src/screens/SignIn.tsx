@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+
+import 'react-native-get-random-values';
+import '@ethersproject/shims';
 import CustomInput from '../components/CustomInput/CustomInput';
 import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
@@ -21,6 +24,7 @@ import entryPointAbi from '../abi/IEntryPoint.json';
 import {signUserOpWeb3} from '../utils/signUserOp';
 import {getAccountInitCode} from '../utils/operationUtils';
 import styles from './SignIn.style';
+import {ethers} from 'ethers';
 
 interface Props {
   navigation: any;
@@ -100,8 +104,12 @@ function SignIn({navigation, setIsSignIn}: Props) {
     if (!signInInfo) {
       return;
     }
+
     const web3 = new Web3(ENV_RPC);
+
     try {
+      console.log(existWallet, 'existWallet');
+
       if (existWallet) {
         const encryptPriKey = await AsyncStorage.getItem(
           STORAGE_KEYS.ENCRYPT_PRIKEY,
@@ -118,8 +126,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
         }
         setIsSignIn(true);
       } else {
-        const owner = web3.eth.accounts.create();
-
+        let owner = ethers.Wallet.createRandom();
         const encryptPrikey = web3.eth.accounts.encrypt(
           owner.privateKey,
           signInInfo.passcode,
@@ -155,8 +162,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
         );
         setIsSignIn(true);
       }
-    } catch (error) {
-      console.log(error, 'error');
+    } catch {
       setError(true);
     }
 

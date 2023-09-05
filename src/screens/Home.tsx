@@ -13,12 +13,7 @@ import {getSdkError} from '@walletconnect/utils';
 import {ENV_FACTORY_ADDRESS, ENV_RPC, ENV_ENTRY_POINT_ADDRESS} from '@env';
 import {EIP155_SIGNING_METHODS} from '../data/EIP155';
 import {handleDeepLinkRedirect} from '../utils/LinkingUtils';
-import {getAccountInitCode} from '../utils/operationUtils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Web3 from 'web3';
-import {AbiItem} from 'web3-utils';
-import entryPointAbi from '../abi/IEntryPoint.json';
-import {fillUserOp} from '../utils/UserOp';
+
 // import {signUserOpWeb3} from '../utils/signUserOp';
 
 const Tab = createBottomTabNavigator();
@@ -170,17 +165,6 @@ function Home({navigation}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const web3 = new Web3(ENV_RPC);
-        // const chainId = await web3.eth.getChainId();
-        const address =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
-        const accountAddress =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-        const salt = (await AsyncStorage.getItem(STORAGE_KEYS.SALT)) || '';
-
-        // check address exist on chain
-        const code = await web3.eth.getCode(accountAddress);
-        console.log(code, 'code');
       } catch (error) {
         console.log(error, 'error');
       }
