@@ -9,13 +9,14 @@ import {ROUTES, STORAGE_KEYS} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Web3 from 'web3';
 import useNumbers from '../hooks/useNumbers';
-import {getAccountInitCode} from '../utils/operationUtils';
+import {AbiItem} from 'web3-utils';
+import factoryAbi from '../abi/SimpleAccountFactory.json';
+import {ENV_FACTORY_ADDRESS, ENV_RPC} from '@env';
 
 interface Props {
   navigation: any;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
-let ENV_RPC = 'https://api.baobab.klaytn.net:8651';
 
 function SignIn({navigation, setIsSignIn}: Props) {
   const {randomBigNumber} = useNumbers();
@@ -62,9 +63,16 @@ function SignIn({navigation, setIsSignIn}: Props) {
           owner.privateKey,
           signInInfo.passcode,
         );
-        const m = Date.now();
-        console.log(m);
+        const abiFactory: AbiItem[] | any = factoryAbi.abi;
+        const factoryContract = new web3.eth.Contract(
+          abiFactory,
+          ENV_FACTORY_ADDRESS,
+        );
+        const accountAddress = await factoryContract.methods
+          .getAddress(owner.address, randomBigNumber)
+          .call();
 
+        await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
         await AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber);
         await AsyncStorage.setItem(
@@ -91,6 +99,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
       } else {
         setExistWallet(false);
       }
+      // setIsSignIn(true);
     };
     checkWallet();
   }, []);

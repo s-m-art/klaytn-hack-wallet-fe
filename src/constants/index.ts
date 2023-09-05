@@ -18,6 +18,7 @@ const ROUTES_BAR = {
 
 const STORAGE_KEYS = {
   ADDRESS_OWNER: 'addressOwner',
+  ADDRESS: 'address',
   SALT: 'salt',
   ENCRYPT_PRIKEY: 'encryptPrivateKey',
 };

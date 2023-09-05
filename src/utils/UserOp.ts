@@ -324,7 +324,6 @@ export async function fillUserOp(
   console.log(`========xxxxxxxxxxxxxxxxxxx======`);
   const entryPointProvider =
     entryPoint?.provider || entryPoint?.currentProvider;
-  console.log(`entryPointProvider?.host:`, entryPointProvider?.host);
   const provider = new Web3(entryPointProvider);
   console.log(`provider:`, {provider});
 

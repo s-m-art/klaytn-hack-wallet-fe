@@ -3,15 +3,23 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Account from './Account/Account';
 import {MyTabBar} from '../components/Tabbar';
-import {ROUTES_BAR} from '../constants';
+import {ROUTES_BAR, STORAGE_KEYS} from '../constants';
 import Sessions from './Sessions/Sessions';
 import Pairing from './Pairing';
 import Settings from './Setting';
 import {SignClientTypes, SessionTypes} from '@walletconnect/types';
 import {currentETHAddress, web3wallet, _pair} from '../utils/Web3WalletClient';
 import {getSdkError} from '@walletconnect/utils';
+import {ENV_FACTORY_ADDRESS, ENV_RPC, ENV_ENTRY_POINT_ADDRESS} from '@env';
 import {EIP155_SIGNING_METHODS} from '../data/EIP155';
 import {handleDeepLinkRedirect} from '../utils/LinkingUtils';
+import {getAccountInitCode} from '../utils/operationUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Web3 from 'web3';
+import {AbiItem} from 'web3-utils';
+import entryPointAbi from '../abi/IEntryPoint.json';
+import {fillUserOp} from '../utils/UserOp';
+// import {signUserOpWeb3} from '../utils/signUserOp';
 
 const Tab = createBottomTabNavigator();
 
@@ -158,6 +166,71 @@ function Home({navigation}) {
     onSessionRequest,
     successPair,
   ]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const web3 = new Web3(ENV_RPC);
+        // const chainId = await web3.eth.getChainId();
+        const address =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
+        const accountAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+        const salt = (await AsyncStorage.getItem(STORAGE_KEYS.SALT)) || '';
+        const initCode = await getAccountInitCode(
+          address,
+          ENV_FACTORY_ADDRESS,
+          salt,
+        );
+
+        const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
+
+        const entryPointContract = new web3.eth.Contract(
+          abiEntrypoint,
+          ENV_ENTRY_POINT_ADDRESS,
+        );
+
+        // check address exist on chain
+        const code = await web3.eth.getCode(accountAddress);
+        console.log(code, 'code');
+
+        const op2 = await fillUserOp(
+          {
+            sender: accountAddress,
+            initCode: initCode,
+            // maxFeePerGas: '0',
+            // maxPriorityFeePerGas: '0',
+            callData: '0x',
+          },
+          entryPointContract,
+        );
+
+        // Test
+        // const encryptPriKey =
+        //   (await AsyncStorage.getItem(STORAGE_KEYS.ENCRYPT_PRIKEY)) || '';
+        // const walletDecrypt = web3.eth.accounts.decrypt(
+        //   JSON.parse(encryptPriKey || '{}'),
+        //   'Admin123',
+        // );
+
+        // const userOpSignedWeb3 = await signUserOpWeb3({
+        //   op: {
+        //     ...op2,
+        //     nonce: 1000,
+        //   },
+        //   privateKey: walletDecrypt.privateKey,
+        //   entryPoint: ENV_ENTRY_POINT_ADDRESS,
+        //   chainId,
+        // });
+        // console.log(userOpSignedWeb3, 'userOpSignedWeb3');
+
+        console.log(op2, 'op2');
+      } catch (error) {
+        console.log(error, 'error');
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <Tab.Navigator

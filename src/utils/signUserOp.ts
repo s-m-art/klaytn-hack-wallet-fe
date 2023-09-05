@@ -8,20 +8,6 @@ import {ABI_FUNCTION} from '../abi';
 const chainIdDefault = 1001;
 const web3 = new Web3();
 
-function encodeWeb3(typevalues: any, forSignature: any) {
-  const types = typevalues.map((typevalue: any) =>
-    typevalue.type === 'bytes' && forSignature ? 'bytes32' : typevalue.type,
-  );
-  const values = typevalues.map((typevalue: any) =>
-    typevalue.type === 'bytes' && forSignature
-      ? Web3.utils.keccak256(typevalue.val)
-      : typevalue.val,
-  );
-  // console.log('///////////////////////', abiCoder, '///////////////////');
-
-  return web3.eth.abi.encodeParameters(types, values);
-}
-
 export function packUserOpWeb3(op: any, forSignature = true): string {
   if (forSignature) {
     return web3.eth.abi.encodeParameters(
@@ -40,14 +26,14 @@ export function packUserOpWeb3(op: any, forSignature = true): string {
       [
         op.sender,
         op.nonce,
-        Web3.utils.keccak256(op.initCode),
-        Web3.utils.keccak256(op.callData),
+        utils.keccak256(op.initCode),
+        utils.keccak256(op.callData),
         op.callGasLimit,
         op.verificationGasLimit,
         op.preVerificationGas,
         op.maxFeePerGas,
         op.maxPriorityFeePerGas,
-        Web3.utils.keccak256(op.paymasterAndData),
+        utils.keccak256(op.paymasterAndData),
       ],
     );
   } else {
