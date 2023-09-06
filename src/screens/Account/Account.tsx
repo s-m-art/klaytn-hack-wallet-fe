@@ -6,11 +6,12 @@ import ListTxn from './ListTxn';
 
 interface Props {
   navigation: any;
+  balance: string;
 }
-function Account({navigation}: Props) {
+function Account({navigation, balance}: Props) {
   return (
     <View style={styles.container}>
-      <TopAccount navigation={navigation} />
+      <TopAccount balance={balance} navigation={navigation} />
       <ListTxn navigation={navigation} />
     </View>
   );

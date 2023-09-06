@@ -25,6 +25,7 @@ import {signUserOpWeb3} from '../utils/signUserOp';
 import {getAccountInitCode} from '../utils/operationUtils';
 import styles from './SignIn.style';
 import {ethers} from 'ethers';
+import {requestToRelayer} from '../services';
 
 interface Props {
   navigation: any;
@@ -97,6 +98,9 @@ function SignIn({navigation, setIsSignIn}: Props) {
       chainId,
     });
     console.log(userOpSignedWeb3, 'userOpSignedWeb3');
+    const data = await requestToRelayer(userOpSignedWeb3);
+
+    console.log(data, 'data');
   };
 
   const handleCreateWallet = async () => {
@@ -144,14 +148,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
         const code = await web3.eth.getCode(accountAddress);
         console.log(code, 'code');
         const notDeployed = code === '0x';
-        if (notDeployed) {
-          await deployWallet({
-            accountAddress,
-            ownerAddress: owner.address,
-            privateKey: owner.privateKey,
-            web3,
-          });
-        }
 
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
@@ -161,6 +157,14 @@ function SignIn({navigation, setIsSignIn}: Props) {
           JSON.stringify(encryptPrikey),
         );
         setIsSignIn(true);
+        if (notDeployed) {
+          await deployWallet({
+            accountAddress,
+            ownerAddress: owner.address,
+            privateKey: owner.privateKey,
+            web3,
+          });
+        }
       }
     } catch {
       setError(true);
@@ -170,6 +174,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
   };
 
   useEffect(() => {
+    // setIsSignIn(true); // fake
     const checkWallet = async () => {
       const walletAddress = await AsyncStorage.getItem(
         STORAGE_KEYS.ADDRESS_OWNER,

@@ -1,15 +1,10 @@
 import React from 'react';
 import {Text, View} from 'react-native';
+import styles from './index.style';
 
 function Settings() {
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'red',
-      }}>
+    <View style={styles.container}>
       <Text>Settings Screen</Text>
     </View>
   );

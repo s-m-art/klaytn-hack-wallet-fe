@@ -15,6 +15,7 @@ import {ROUTES_BAR} from '../constants';
 
 interface Props {
   navigation: any;
+  setModalVisible: (val: boolean) => void;
 }
 
 const TAB_CONTENTS = [
@@ -50,8 +51,12 @@ const TAB_CONTENTS = [
   },
 ];
 
-export function MyTabBar({navigation}: Props) {
+export function MyTabBar({navigation, setModalVisible}: Props) {
   const [indexSelected, setIndexSelected] = useState(0);
+  const handleSelectItem = (index: number, title: string): void => {
+    setIndexSelected(index);
+    navigation.navigate(title);
+  };
 
   return (
     <View style={styles.container}>
@@ -59,11 +64,14 @@ export function MyTabBar({navigation}: Props) {
         let isSelected = indexSelected === index;
         let middleTab = index === 2;
         let icon = isSelected ? item.iconActive : item.icon;
+        const isWalletModal = item.title === ROUTES_BAR.WALLET;
+
         return (
           <TouchableOpacity
             onPress={() => {
-              setIndexSelected(index);
-              navigation.navigate(item.title);
+              isWalletModal
+                ? setModalVisible(true)
+                : handleSelectItem(index, item.title);
             }}
             key={item.id}>
             <View style={styles.itemTab}>

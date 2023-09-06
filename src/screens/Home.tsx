@@ -1,18 +1,29 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {Suspense, useCallback, useEffect, useState} from 'react';
 // import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Account from './Account/Account';
 import {MyTabBar} from '../components/Tabbar';
-import {ROUTES_BAR, STORAGE_KEYS} from '../constants';
+import {ROUTES_BAR} from '../constants';
 import Sessions from './Sessions/Sessions';
 import Pairing from './Pairing';
-import Settings from './Setting';
+import Settings from './Settings/Setting';
 import {SignClientTypes, SessionTypes} from '@walletconnect/types';
 import {currentETHAddress, web3wallet, _pair} from '../utils/Web3WalletClient';
 import {getSdkError} from '@walletconnect/utils';
-import {ENV_FACTORY_ADDRESS, ENV_RPC, ENV_ENTRY_POINT_ADDRESS} from '@env';
 import {EIP155_SIGNING_METHODS} from '../data/EIP155';
 import {handleDeepLinkRedirect} from '../utils/LinkingUtils';
+import {ActivityIndicator, View} from 'react-native';
+import {PairModal} from '../components/Modals/PairModal';
+import {SendTransactionModal} from '../components/Modals/SendTransactionModal';
+const ModalConnect = React.lazy(
+  () => import('../components/ModalConnect/ModalConnect'),
+);
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import {ENV_RPC} from '@env';
+
+import Web3 from 'web3';
+import {STORAGE_KEYS} from '../constants/index';
 
 // import {signUserOpWeb3} from '../utils/signUserOp';
 
@@ -26,13 +37,15 @@ function Home({navigation}) {
   const [sendTransactionModal, setSendTransactionModal] = useState(false);
   const [copyDialog, setCopyDialog] = useState(false);
   const [successPair, setSuccessPair] = useState(false);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [balance, setBalance] = useState<string>('0');
   // Pairing State
   const [pairedProposal, setPairedProposal] =
     useState<SignClientTypes.EventArguments['session_proposal']>();
 
-  const [requestEventData, setRequestEventData] =
-    useState<SignClientTypes.EventArguments['session_request']>();
+  const [requestEventData, setRequestEventData] = useState<
+    SignClientTypes.EventArguments['session_request'] | any
+  >();
   const [requestSession, setRequestSession] = useState<SessionTypes.Struct>();
 
   async function handleDecline() {
@@ -87,7 +100,7 @@ function Home({navigation}) {
 
   async function pair(uri: string) {
     const pairing = await _pair({uri});
-    setCopyDialog(false);
+    // setCopyDialog(false);
 
     // @notice iOS has an issue with modals, so we need to delay the approval modal
     setTimeout(() => {
@@ -96,11 +109,17 @@ function Home({navigation}) {
     return pairing;
   }
 
+  const onPair = (uri: string) => {
+    pair(uri);
+    setModalVisible(false);
+  };
+
   // ToDo / Consider: How best to move onSessionProposal() + onSessionRequest() + the if statement Listeners.
   // Know there is an events config we did in web-examples app
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
       setPairedProposal(proposal);
+      console.log('hihihihi session_proposal');
     },
     [],
   );
@@ -139,6 +158,22 @@ function Home({navigation}) {
   );
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const web3 = new Web3(ENV_RPC);
+        const address = await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS);
+
+        const balanceData: string = await web3.eth.getBalance(address);
+        setBalance(balanceData);
+        console.log(balanceData, 'balanceData');
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
     if (
       copyDialog ||
       approvalModal ||
@@ -162,29 +197,52 @@ function Home({navigation}) {
     successPair,
   ]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-      } catch (error) {
-        console.log(error, 'error');
-      }
-    };
-    fetchData();
-  }, []);
-
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      tabBar={props => <MyTabBar {...props} />}
-      initialRouteName={ROUTES_BAR.ACCOUNT}>
-      <Tab.Screen name={ROUTES_BAR.ACCOUNT} component={Account} />
-      <Tab.Screen name={ROUTES_BAR.SESSIONS} component={Sessions} />
-      <Tab.Screen name={ROUTES_BAR.WALLET} component={Account} />
-      <Tab.Screen name={ROUTES_BAR.PAIRING} component={Pairing} />
-      <Tab.Screen name={ROUTES_BAR.SETTINGS} component={Settings} />
-    </Tab.Navigator>
+    <View style={{flex: 1, position: 'relative'}}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        tabBar={props => (
+          <MyTabBar setModalVisible={setModalVisible} {...props} />
+        )}
+        initialRouteName={ROUTES_BAR.ACCOUNT}>
+        <Tab.Screen name={ROUTES_BAR.ACCOUNT}>
+          {() => <Account balance={balance} />}
+        </Tab.Screen>
+        <Tab.Screen name={ROUTES_BAR.SESSIONS} component={Sessions} />
+        <Tab.Screen name={ROUTES_BAR.PAIRING} component={Pairing} />
+        <Tab.Screen name={ROUTES_BAR.SETTINGS} component={Settings} />
+      </Tab.Navigator>
+
+      <PairModal
+        proposal={pairedProposal}
+        open={setApprovalModal}
+        visible={approvalModal}
+        handleAccept={handleAccept}
+        handleDecline={handleDecline}
+      />
+
+      {requestEventData && requestSession && sendTransactionModal && (
+        <SendTransactionModal
+          visible={sendTransactionModal}
+          setVisible={setSendTransactionModal}
+          requestEvent={requestEventData}
+          requestSession={requestSession}
+          // setRequestEventData={setRequestEventData}
+          // setRequestSession={setRequestSession}
+        />
+      )}
+
+      <Suspense fallback={<ActivityIndicator />}>
+        <ModalConnect
+          onPair={onPair}
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+        />
+        <Suspense />
+      </Suspense>
+    </View>
   );
 }
 

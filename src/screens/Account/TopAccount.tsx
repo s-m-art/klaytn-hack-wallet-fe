@@ -5,8 +5,9 @@ import WalletLog from '../../../assets/icons/walletLog.svg';
 import {ROUTES} from '../../constants';
 interface Props {
   navigation: any;
+  balance: string;
 }
-function TopAccount({navigation}: Props) {
+function TopAccount({navigation, balance}: Props) {
   const goSend = () => {
     navigation.navigate(ROUTES.SEND);
   };
@@ -55,7 +56,7 @@ function TopAccount({navigation}: Props) {
         <View style={styles.circleITem}>
           <WalletLog width={36} height={36} />
           <Text style={styles.titleNet}>Klay`s balance</Text>
-          <Text style={styles.valuePrice}>3.519,44</Text>
+          <Text style={styles.valuePrice}>{balance}</Text>
         </View>
       </View>
       <TouchableOpacity onPress={goSend}>

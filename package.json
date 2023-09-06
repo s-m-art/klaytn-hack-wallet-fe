@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "buidApk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../"
+    "buildApk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../"
   },
   "dependencies": {
     "@ethersproject/shims": "^5.7.0",
@@ -24,6 +24,7 @@
     "@types/react-native-vector-icons": "^6.4.14",
     "@walletconnect/react-native-compat": "2.9.2",
     "@walletconnect/web3wallet": "1.8.8",
+    "axios": "^1.5.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "bignumber.js": "^9.1.2",
     "ethereumjs-util": "^7.1.5",
