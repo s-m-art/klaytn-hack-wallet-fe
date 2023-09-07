@@ -1,7 +1,6 @@
 import React from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
-import {AcceptRejectButton} from '../AcceptRejectButton';
 import {Events} from '../Modal/Events';
 import {Methods} from '../Modal/Methods';
 import {ModalHeader} from '../Modal/ModalHeader';

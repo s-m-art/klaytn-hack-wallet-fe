@@ -26,6 +26,7 @@ import {getAccountInitCode} from '../utils/operationUtils';
 import styles from './SignIn.style';
 import {ethers} from 'ethers';
 import {requestToRelayer} from '../services';
+import {setWalletAddress} from '../utils/Web3WalletClient';
 
 interface Props {
   navigation: any;
@@ -115,6 +116,8 @@ function SignIn({navigation, setIsSignIn}: Props) {
       console.log(existWallet, 'existWallet');
 
       if (existWallet) {
+        const ownerAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
         const encryptPriKey = await AsyncStorage.getItem(
           STORAGE_KEYS.ENCRYPT_PRIKEY,
         );
@@ -128,6 +131,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
           setError(true);
           return;
         }
+        setWalletAddress({walletAddress: ownerAddress});
         setIsSignIn(true);
       } else {
         let owner = ethers.Wallet.createRandom();
@@ -140,6 +144,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
           abiFactory,
           ENV_FACTORY_ADDRESS,
         );
+        setWalletAddress({walletAddress: owner.address});
         const accountAddress = await factoryContract.methods
           .getAddress(owner.address, randomBigNumber)
           .call();
@@ -216,7 +221,9 @@ function SignIn({navigation, setIsSignIn}: Props) {
             {loading ? (
               <ActivityIndicator size="large" />
             ) : (
-              <Text style={styles.loginBtn}>Log In</Text>
+              <Text style={styles.loginBtn}>
+                {existWallet ? 'Login' : 'Create'}
+              </Text>
             )}
           </TouchableOpacity>
           <View style={styles.wrapBottom}>

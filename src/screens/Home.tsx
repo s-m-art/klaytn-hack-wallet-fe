@@ -24,6 +24,8 @@ import {ENV_RPC} from '@env';
 
 import Web3 from 'web3';
 import {STORAGE_KEYS} from '../constants/index';
+import {SignModal} from '../components/Modals/SignModal';
+import {SignTypedDataModal} from '../components/Modals/SignTypedDataModal';
 
 // import {signUserOpWeb3} from '../utils/signUserOp';
 
@@ -223,10 +225,31 @@ function Home({navigation}) {
         handleDecline={handleDecline}
       />
 
+      {requestEventData && requestSession && signModal && (
+        <SignModal
+          visible={signModal}
+          setVisible={setSignModal}
+          requestEvent={requestEventData}
+          requestSession={requestSession}
+          // setRequestEventData={setRequestEventData}
+          // setRequestSession={setRequestSession}
+        />
+      )}
+
       {requestEventData && requestSession && sendTransactionModal && (
         <SendTransactionModal
           visible={sendTransactionModal}
           setVisible={setSendTransactionModal}
+          requestEvent={requestEventData}
+          requestSession={requestSession}
+          // setRequestEventData={setRequestEventData}
+          // setRequestSession={setRequestSession}
+        />
+      )}
+      {requestEventData && requestSession && signTypedDataModal && (
+        <SignTypedDataModal
+          visible={signTypedDataModal}
+          setVisible={setSignTypedDataModal}
           requestEvent={requestEventData}
           requestSession={requestSession}
           // setRequestEventData={setRequestEventData}

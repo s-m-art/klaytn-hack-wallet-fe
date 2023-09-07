@@ -1,4 +1,4 @@
-const listTxnMock = [
+const ListSessionMock = [
   {
     id: 1,
     name: 'Dapp`s name',
@@ -77,4 +77,4 @@ const TYPE_STATUS = {
   EXPIRED: 3,
 };
 
-export {listTxnMock, TYPE_STATUS};
+export {ListSessionMock, TYPE_STATUS};

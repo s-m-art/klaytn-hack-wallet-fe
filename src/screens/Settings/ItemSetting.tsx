@@ -1,11 +1,23 @@
-import React from 'react';
+import React, {ReactElement} from 'react';
 import {Text, View} from 'react-native';
 import styles from './index.style';
 
-function ItemSetting() {
+interface Props {
+  title?: string;
+  listContent?: string[];
+}
+
+function ItemSetting({title = '', listContent = []}: Props): ReactElement {
   return (
     <View style={styles.itemSetting}>
-      <Text>ItemSetting Screen</Text>
+      <View>
+        <Text>{title}</Text>
+      </View>
+      <View>
+        {/* {listContent.map(itemText => (
+          <View></View>
+        ))} */}
+      </View>
     </View>
   );
 }

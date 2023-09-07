@@ -5,6 +5,7 @@ import {SignClientTypes} from '@walletconnect/types';
 import {Tag} from '../Tag';
 import {Methods} from '../Modal/Methods';
 import {Message} from '../Modal/Message';
+import {getSignParamsMessage} from '../../utils/HelperUtils';
 import {ModalHeader} from '../Modal/ModalHeader';
 import {
   approveEIP155Request,
@@ -14,21 +15,22 @@ import {web3wallet} from '../../utils/Web3WalletClient';
 import {handleDeepLinkRedirect} from '../../utils/LinkingUtils';
 import ComboBtn from '../ComboBtn/ComboBtn';
 
-interface SendTransactionModalProps {
+interface SignTypedDataModalProps {
   visible: boolean;
   setVisible: (arg0: boolean) => void;
-  requestEvent: SignClientTypes.EventArguments['session_request'] | any;
+  requestEvent: SignClientTypes.EventArguments['session_request'] | undefined;
   requestSession: any;
 }
 
-export function SendTransactionModal({
+export function SignTypedDataModal({
   visible,
   setVisible,
   requestEvent,
   requestSession,
-}: SendTransactionModalProps) {
+}: SignTypedDataModalProps) {
   const chainID = requestEvent?.params?.chainId?.toUpperCase() || '';
   const method = requestEvent?.params?.request?.method || '';
+  const message = getSignParamsMessage(requestEvent?.params?.request?.params);
 
   const requestName = requestSession?.peer?.metadata?.name;
   const requestIcon = requestSession?.peer?.metadata?.icons[0];
@@ -36,9 +38,7 @@ export function SendTransactionModal({
   const requestMetadata: SignClientTypes.Metadata =
     requestSession?.peer?.metadata;
 
-  const {topic, params} = requestEvent;
-  const {request} = params;
-  const transaction = request.params[0];
+  const {topic}: any = requestEvent;
 
   function onRedirect() {
     handleDeepLinkRedirect(requestMetadata?.redirect);
@@ -80,7 +80,7 @@ export function SendTransactionModal({
             <Tag value={chainID} grey={true} />
           </View>
           <Methods methods={[method]} />
-          <Message message={JSON.stringify(transaction, null, 2)} />
+          <Message message={JSON.stringify(message, null, 2)} />
         </View>
 
         <ComboBtn
@@ -96,17 +96,17 @@ export function SendTransactionModal({
 }
 
 const styles = StyleSheet.create({
-  chain: {
-    display: 'flex',
-    flexDirection: 'row',
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
   chainContainer: {
     width: '90%',
     padding: 10,
     borderRadius: 25,
     backgroundColor: 'rgba(80, 80, 89, 0.1)',
+  },
+  chain: {
+    display: 'flex',
+    flexDirection: 'row',
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   flexRow: {
     display: 'flex',
