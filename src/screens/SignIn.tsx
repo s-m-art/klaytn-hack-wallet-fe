@@ -26,7 +26,7 @@ import {getAccountInitCode} from '../utils/operationUtils';
 import styles from './SignIn.style';
 import {ethers} from 'ethers';
 import {requestToRelayer} from '../services';
-import {setWalletAddress} from '../utils/Web3WalletClient';
+import {setWalletAddress, setWeb3Global} from '../utils/Web3WalletClient';
 
 interface Props {
   navigation: any;
@@ -40,6 +40,11 @@ interface DeployWalletParam {
   privateKey: string;
   ownerAddress: string;
 }
+const FAKE_WALLET = {
+  address: '0x3a524990De14A46e8Fe2e9ec4cA535012d3EBf0F',
+  privateKey:
+    '0x0d85968fbf5c5cfa1af4271b1fc2477ef73127744dc4da84e2dd8fe4f418d13e',
+};
 
 function SignIn({navigation, setIsSignIn}: Props) {
   const {randomBigNumber} = useNumbers();
@@ -111,10 +116,8 @@ function SignIn({navigation, setIsSignIn}: Props) {
     }
 
     const web3 = new Web3(ENV_RPC);
-
+    setWeb3Global(web3);
     try {
-      console.log(existWallet, 'existWallet');
-
       if (existWallet) {
         const ownerAddress =
           (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
@@ -170,6 +173,58 @@ function SignIn({navigation, setIsSignIn}: Props) {
             web3,
           });
         }
+      }
+    } catch {
+      setError(true);
+    }
+
+    setLoading(false);
+  };
+
+  const createWalletFake = async () => {
+    const web3 = new Web3(ENV_RPC);
+    setLoading(true);
+    setWeb3Global(web3);
+    if (!signInInfo) {
+      return;
+    }
+    try {
+      const FAKE_CODE = '123';
+      let owner = FAKE_WALLET;
+      const encryptPrikey = web3.eth.accounts.encrypt(
+        owner.privateKey,
+        FAKE_CODE,
+      );
+      const abiFactory: AbiItem[] | any = factoryAbi.abi;
+      const factoryContract = new web3.eth.Contract(
+        abiFactory,
+        ENV_FACTORY_ADDRESS,
+      );
+      setWalletAddress({walletAddress: owner.address});
+      const accountAddress = await factoryContract.methods
+        .getAddress(owner.address, randomBigNumber)
+        .call();
+
+      // check address exist on chain
+      const code = await web3.eth.getCode(accountAddress);
+      console.log(code, 'code');
+      const notDeployed = code === '0x';
+
+      await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
+      await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
+      await AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber);
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.ENCRYPT_PRIKEY,
+        JSON.stringify(encryptPrikey),
+      );
+      setIsSignIn(true);
+      if (notDeployed) {
+        await deployWallet({
+          accountAddress,
+          ownerAddress: owner.address,
+          privateKey: owner.privateKey,
+          web3,
+        });
       }
     } catch {
       setError(true);
@@ -235,6 +290,16 @@ function SignIn({navigation, setIsSignIn}: Props) {
             </View>
           </View>
         </View>
+
+        {/* ==============Fake btn====================== */}
+        <TouchableOpacity
+          disabled={loading}
+          style={styles.btn}
+          onPress={createWalletFake}>
+          <Text style={styles.loginBtn}>DEMO</Text>
+        </TouchableOpacity>
+
+        {/* =================================================== */}
       </View>
     </View>
   );

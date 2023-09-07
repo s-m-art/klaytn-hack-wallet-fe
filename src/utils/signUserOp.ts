@@ -133,7 +133,7 @@ export async function signUserOpWeb3({
   };
 }
 
-export const getCallDataEntryPoint = ({
+export const getCallDataAddSession = ({
   sessionUser,
   startFrom,
   validUntil,
@@ -148,7 +148,7 @@ export const getCallDataEntryPoint = ({
   return msgData;
 };
 
-export const getCallDataAddSession = ({sessionUser}: any) => {
+export const getCallDataRemoveSession = ({sessionUser}: any) => {
   const msgData = web3.eth.abi.encodeFunctionCall(ABI_FUNCTION.REMOVE_SESSION, [
     sessionUser,
   ]);

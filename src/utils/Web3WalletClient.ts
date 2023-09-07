@@ -1,12 +1,14 @@
 import {Core} from '@walletconnect/core';
 import {ICore} from '@walletconnect/types';
+import Web3 from 'web3';
 import {Web3Wallet, IWeb3Wallet} from '@walletconnect/web3wallet';
 export let web3wallet: IWeb3Wallet;
 export let core: ICore;
 export let currentETHAddress: string;
-
+export let web3Global: Web3;
 // @ts-expect-error - env is a virtualised module via Babel config.
 import {ENV_PROJECT_ID, ENV_RELAY_URL} from '@env';
+
 // import {createOrRestoreEIP155Wallet} from './EIP155Wallet';
 
 interface TypeCreate {
@@ -23,7 +25,6 @@ export async function createWeb3Wallet() {
     projectId: ENV_PROJECT_ID,
     relayUrl: ENV_RELAY_URL,
   });
-  console.log('0-------------------------------------');
 
   // const {eip155Addresses} = await createOrRestoreEIP155Wallet();
   // currentETHAddress =
@@ -43,7 +44,10 @@ export async function createWeb3Wallet() {
       },
     },
   });
-  console.log('11111111111111111111111111111111111111111111');
+}
+
+export function setWeb3Global(web3: Web3) {
+  web3Global = web3;
 }
 
 export function setWalletAddress({walletAddress}: TypeCreate) {

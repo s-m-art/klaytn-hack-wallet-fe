@@ -6,6 +6,7 @@ import Web3 from 'web3';
 // import {AddressZero, callDataCost, rethrow} from './testutils';
 import {ecsign, toRpcSig, keccak256 as keccak256_buffer} from 'ethereumjs-util';
 // import {EntryPoint} from '../typechain';
+import {ENV_ENTRY_POINT_ADDRESS} from '@env';
 // import {UserOperation} from './UserOperation';
 // import {Create2Factory} from '../src/Create2Factory';
 import {UserOperation} from '../constants/UserOperation';
@@ -352,7 +353,7 @@ export async function fillUserOp(
     if (op1.verificationGasLimit == null) {
       if (provider == null) throw new Error('no entrypoint/provider');
       const initEstimate = await provider.eth.estimateGas({
-        from: entryPoint?.address,
+        from: ENV_ENTRY_POINT_ADDRESS,
         to: initAddr,
         data: initCallData,
         gasLimit: 10e6,
@@ -378,7 +379,7 @@ export async function fillUserOp(
     if (provider == null)
       throw new Error('must have entryPoint for callGasLimit estimate');
     const gasEtimated = await provider.eth.estimateGas({
-      from: entryPoint?.address,
+      from: ENV_ENTRY_POINT_ADDRESS,
       to: op1.sender,
       data: op1.callData,
     });

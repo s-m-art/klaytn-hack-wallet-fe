@@ -8,9 +8,11 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
+    "androidClean": "cd android && ./gradlew clean && cd ../ && react-native run-android",
     "buildApk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.3",
     "@ethersproject/shims": "^5.7.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@react-native-async-storage/async-storage": "1.19.1",
@@ -29,6 +31,7 @@
     "bignumber.js": "^9.1.2",
     "ethereumjs-util": "^7.1.5",
     "ethers": "5.7.2",
+    "graphql": "^16.8.0",
     "https-browserify": "^1.0.0",
     "node-libs-browser": "^2.2.1",
     "react": "18.2.0",

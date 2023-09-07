@@ -1,18 +1,29 @@
-import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {View, StyleSheet, TextInput, Text} from 'react-native';
 import Modal from 'react-native-modal';
 import {SignClientTypes} from '@walletconnect/types';
 import {Tag} from '../Tag';
 import {Methods} from '../Modal/Methods';
 import {Message} from '../Modal/Message';
 import {ModalHeader} from '../Modal/ModalHeader';
-import {
-  approveEIP155Request,
-  rejectEIP155Request,
-} from '../../utils/EIP155Request';
-import {web3wallet} from '../../utils/Web3WalletClient';
+import {rejectEIP155Request} from '../../utils/EIP155Request';
+import {ENV_ENTRY_POINT_ADDRESS, ENV_FACTORY_ADDRESS} from '@env';
+
+import {AbiItem} from 'web3-utils';
+import {web3Global, web3wallet} from '../../utils/Web3WalletClient';
 import {handleDeepLinkRedirect} from '../../utils/LinkingUtils';
 import ComboBtn from '../ComboBtn/ComboBtn';
+import entryPointAbi from '../../abi/IEntryPoint.json';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {STORAGE_KEYS} from '../../constants';
+import {getAccountInitCode} from '../../utils/operationUtils';
+import {requestToRelayer} from '../../services';
+import {getCallDataAddSession, signUserOpWeb3} from '../../utils/signUserOp';
+import {fillUserOp} from '../../utils/UserOp';
+
+import {formatJsonRpcResult} from '@json-rpc-tools/utils';
+import {useApolloClient} from '@apollo/client';
+import {GET_TXN_HASH} from '../../services/query';
 
 interface SendTransactionModalProps {
   visible: boolean;
@@ -29,7 +40,8 @@ export function SendTransactionModal({
 }: SendTransactionModalProps) {
   const chainID = requestEvent?.params?.chainId?.toUpperCase() || '';
   const method = requestEvent?.params?.request?.method || '';
-
+  const [passcode, setPasscode] = useState('');
+  const [error, setError] = useState(false);
   const requestName = requestSession?.peer?.metadata?.name;
   const requestIcon = requestSession?.peer?.metadata?.icons[0];
   const requestURL = requestSession?.peer?.metadata?.url;
@@ -39,20 +51,98 @@ export function SendTransactionModal({
   const {topic, params} = requestEvent;
   const {request} = params;
   const transaction = request.params[0];
-
+  const client = useApolloClient();
   function onRedirect() {
     handleDeepLinkRedirect(requestMetadata?.redirect);
   }
 
   async function onApprove() {
-    if (requestEvent) {
-      const response = await approveEIP155Request(requestEvent);
-      await web3wallet.respondSessionRequest({
-        topic,
-        response,
-      });
-      setVisible(false);
-      onRedirect();
+    try {
+      if (requestEvent) {
+        const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
+        const chainId = await web3Global.eth.getChainId();
+        const encryptPriKey = await AsyncStorage.getItem(
+          STORAGE_KEYS.ENCRYPT_PRIKEY,
+        );
+        const walletDecrypt = web3Global.eth.accounts.decrypt(
+          JSON.parse(encryptPriKey || '{}'),
+          passcode,
+        );
+        const {privateKey} = walletDecrypt;
+        if (!privateKey) {
+          setError(true);
+          return;
+        }
+        const accountAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+
+        const salt = (await AsyncStorage.getItem(STORAGE_KEYS.SALT)) || '';
+        const ownerAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
+        const entryPointContract = new web3Global.eth.Contract(
+          abiEntrypoint,
+          ENV_ENTRY_POINT_ADDRESS,
+        );
+        const initCode = await getAccountInitCode(
+          ownerAddress,
+          ENV_FACTORY_ADDRESS,
+          salt,
+        );
+        const {params: paramsRequest, id} = requestEvent;
+        const {address, validAfter, validUntil, maxAmount} =
+          paramsRequest.request.params[0];
+        const msgData = getCallDataAddSession({
+          sessionUser: address,
+          startFrom: validAfter,
+          validUntil,
+          totalAmount: maxAmount,
+        });
+
+        const op2 = await fillUserOp(
+          {
+            sender: accountAddress,
+            initCode,
+            maxFeePerGas: '0',
+            maxPriorityFeePerGas: '0',
+            callData: msgData,
+          },
+          entryPointContract,
+        );
+        const userOpSignedWeb3 = await signUserOpWeb3({
+          op: {
+            ...op2,
+            initCode: '0x',
+            nonce: 1000,
+          },
+          privateKey,
+          entryPoint: ENV_ENTRY_POINT_ADDRESS,
+          chainId,
+        });
+
+        const dataRelayer = await requestToRelayer(userOpSignedWeb3);
+        console.log(dataRelayer, 'dataRelayer');
+        const {result: userOpHash} = dataRelayer;
+        // TODO
+        const res = await client.query({
+          query: GET_TXN_HASH,
+          variables: {
+            userOpHash,
+          },
+        });
+        // const data = res.data;
+        console.log(res, 'res');
+
+        const response = formatJsonRpcResult(id, {success: true, msg: 'error'});
+        await web3wallet.respondSessionRequest({
+          topic,
+          response,
+        });
+        setVisible(false);
+        onRedirect();
+      }
+    } catch (error) {
+      console.log(error, 'error');
+      setError(true);
     }
   }
 
@@ -82,7 +172,15 @@ export function SendTransactionModal({
           <Methods methods={[method]} />
           <Message message={JSON.stringify(transaction, null, 2)} />
         </View>
-
+        <View style={styles.wrapPasscode}>
+          <Text style={styles.passcode}>Passcode</Text>
+          <TextInput
+            onChangeText={setPasscode}
+            value={passcode}
+            style={styles.input}
+          />
+          {error && <Text>Wrong passcode</Text>}
+        </View>
         <ComboBtn
           styleContainer={styles.chain}
           onCancel={onReject}
@@ -101,6 +199,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingTop: 10,
     paddingBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'white',
+    width: '90%',
+    borderRadius: 10,
+  },
+  wrapPasscode: {
+    width: '90%',
+  },
+  passcode: {
+    textAlign: 'left',
+    marginBottom: 10,
   },
   chainContainer: {
     width: '90%',

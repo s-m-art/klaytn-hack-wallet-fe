@@ -13,19 +13,16 @@ import Home from './src/screens/Home';
 import {createStackNavigator} from '@react-navigation/stack';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
-import {ROUTES, ROUTES_BAR, STORAGE_KEYS} from './src/constants';
+import {ROUTES, ROUTES_BAR} from './src/constants';
 import DetailTxn from './src/screens/DetailTxn/DetailTxn';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 import Send from './src/screens/Send/Send';
 import Confirm from './src/screens/Confirm/Confirm';
 import useInitialization from './src/hooks/useInitialization';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {setWalletAddress} from './src/utils/Web3WalletClient';
 
 const Stack = createStackNavigator();
 
 function App(): JSX.Element {
-  const [loading, setLoading] = useState(true);
   const [isSignedIn, setIsSignIn] = useState(false);
   // const web3 = new Web3();
 

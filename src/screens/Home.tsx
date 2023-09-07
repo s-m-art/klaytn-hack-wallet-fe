@@ -31,16 +31,17 @@ import {SignTypedDataModal} from '../components/Modals/SignTypedDataModal';
 
 const Tab = createBottomTabNavigator();
 
-function Home({navigation}) {
+function Home() {
   // Modal Visible State
   const [approvalModal, setApprovalModal] = useState(false);
   const [signModal, setSignModal] = useState(false);
   const [signTypedDataModal, setSignTypedDataModal] = useState(false);
   const [sendTransactionModal, setSendTransactionModal] = useState(false);
-  const [copyDialog, setCopyDialog] = useState(false);
+  const [copyDialog] = useState(false);
   const [successPair, setSuccessPair] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [balance, setBalance] = useState<string>('0');
+
   // Pairing State
   const [pairedProposal, setPairedProposal] =
     useState<SignClientTypes.EventArguments['session_proposal']>();
@@ -96,9 +97,9 @@ function Home({navigation}) {
     }
   }
 
-  const handleCancel = () => {
-    setCopyDialog(false);
-  };
+  // const handleCancel = () => {
+  //   setCopyDialog(false);
+  // };
 
   async function pair(uri: string) {
     const pairing = await _pair({uri});
@@ -121,7 +122,6 @@ function Home({navigation}) {
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
       setPairedProposal(proposal);
-      console.log('hihihihi session_proposal');
     },
     [],
   );
@@ -150,6 +150,7 @@ function Home({navigation}) {
           return;
         case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
         case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
+        case EIP155_SIGNING_METHODS.ETH_REQUEST_SESSION_KEY:
           setRequestSession(requestSessionData);
           setRequestEventData(requestEvent);
           setSendTransactionModal(true);
@@ -163,7 +164,8 @@ function Home({navigation}) {
     const fetchData = async () => {
       try {
         const web3 = new Web3(ENV_RPC);
-        const address = await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS);
+        const address =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
 
         const balanceData: string = await web3.eth.getBalance(address);
         setBalance(balanceData);
@@ -210,7 +212,7 @@ function Home({navigation}) {
         )}
         initialRouteName={ROUTES_BAR.ACCOUNT}>
         <Tab.Screen name={ROUTES_BAR.ACCOUNT}>
-          {() => <Account balance={balance} />}
+          {props => <Account {...props} balance={balance} />}
         </Tab.Screen>
         <Tab.Screen name={ROUTES_BAR.SESSIONS} component={Sessions} />
         <Tab.Screen name={ROUTES_BAR.PAIRING} component={Pairing} />
@@ -219,7 +221,6 @@ function Home({navigation}) {
 
       <PairModal
         proposal={pairedProposal}
-        open={setApprovalModal}
         visible={approvalModal}
         handleAccept={handleAccept}
         handleDecline={handleDecline}
