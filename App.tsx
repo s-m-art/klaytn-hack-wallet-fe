@@ -19,12 +19,12 @@ import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 import Send from './src/screens/Send/Send';
 import Confirm from './src/screens/Confirm/Confirm';
 import useInitialization from './src/hooks/useInitialization';
+import SessionDetails from './src/screens/Sessions/SessionDetails';
 
 const Stack = createStackNavigator();
 
 function App(): JSX.Element {
   const [isSignedIn, setIsSignIn] = useState(false);
-  // const web3 = new Web3();
 
   const initialized = useInitialization();
 
@@ -46,6 +46,10 @@ function App(): JSX.Element {
               <Stack.Screen name={ROUTES.SEND} component={Send} />
               <Stack.Screen name={ROUTES_BAR.DETAIL} component={DetailTxn} />
               <Stack.Screen name={ROUTES.CONFIRM} component={Confirm} />
+              <Stack.Screen
+                name={ROUTES_BAR.SESSION_DETAILS}
+                component={SessionDetails}
+              />
             </>
           ) : (
             <>

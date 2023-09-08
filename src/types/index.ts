@@ -1,8 +1,7 @@
-type TxnData = {
-  name: string;
-  type: number;
-  startDate: string;
-  endDate: string;
+type SessionData = {
+  id: string;
+  startFrom: string;
+  validUntil: string;
 };
 
 type Transaction = {
@@ -11,4 +10,4 @@ type Transaction = {
   data: string;
 };
 
-export type {TxnData, Transaction};
+export type {SessionData, Transaction};

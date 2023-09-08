@@ -1,17 +1,30 @@
-import React from 'react';
-import {FlatList, ScrollView, Text, View} from 'react-native';
-import {useQuery} from '@apollo/client';
+import React, {useEffect} from 'react';
+import {FlatList, Text, View} from 'react-native';
+import {useLazyQuery} from '@apollo/client';
 
 import {GET_ALL_TRANSACTIONS} from '../../services/query';
 import TransactionItem from './TransactionItem';
 import styles from './index.style';
+import {STORAGE_KEYS} from '../../constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props {
   navigation: any;
 }
 
 function ListTransactions({navigation}: Props) {
-  const {loading, error, data} = useQuery(GET_ALL_TRANSACTIONS);
+  const [getTransactions, {loading, error, data}] =
+    useLazyQuery(GET_ALL_TRANSACTIONS);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const accountAddress =
+        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+      getTransactions({variables: {sender: accountAddress}});
+    };
+
+    fetchData();
+  }, []);
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;

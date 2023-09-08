@@ -14,6 +14,7 @@ const ROUTES_BAR = {
   PAIRING: 'Pairing',
   SETTINGS: 'Settings',
   DETAIL: 'Detail',
+  SESSION_DETAILS: 'SessionDetails',
 };
 
 const STORAGE_KEYS = {
@@ -23,4 +24,10 @@ const STORAGE_KEYS = {
   ENCRYPT_PRIKEY: 'encryptPrivateKey',
 };
 
-export {ROUTES, ROUTES_BAR, STORAGE_KEYS};
+const SESSION_TYPES = {
+  VALID: 'Valid',
+  UP_COMING: 'Upcoming',
+  EXPIRED: 'Expired',
+};
+
+export {ROUTES, ROUTES_BAR, STORAGE_KEYS, SESSION_TYPES};
