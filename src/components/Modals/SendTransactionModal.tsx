@@ -101,7 +101,7 @@ export function SendTransactionModal({
         const op2 = await fillUserOp(
           {
             sender: accountAddress,
-            initCode,
+            initCode: '0x',
             maxFeePerGas: '0',
             maxPriorityFeePerGas: '0',
             callData: msgData,

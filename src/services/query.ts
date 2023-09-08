@@ -56,6 +56,7 @@ const GET_SESSION = gql`
       startFrom
       validUntil
       totalAmount
+      sessionUser
     }
   }
 `;
