@@ -34,7 +34,7 @@ export const requestToRelayer = async (params: Params) => {
     console.log(jsonData, 'jsonData');
 
     const res = await axios.post(
-      'https://10db-118-70-67-134.ngrok.io',
+      'https://e049-118-70-67-134.ngrok.io',
       jsonData,
     );
 

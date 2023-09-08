@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList, ScrollView, Text, View} from 'react-native';
 import {useQuery} from '@apollo/client';
 
 import {GET_ALL_TRANSACTIONS} from '../../services/query';

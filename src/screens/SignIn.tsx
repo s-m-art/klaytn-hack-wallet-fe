@@ -90,6 +90,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
         maxFeePerGas: '0',
         maxPriorityFeePerGas: '0',
         callData: '0x',
+        nonce: 1000,
       },
       entryPointContract,
     );
@@ -119,8 +120,8 @@ function SignIn({navigation, setIsSignIn}: Props) {
     setWeb3Global(web3);
     try {
       if (existWallet) {
-        const ownerAddress =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS_OWNER)) || '';
+        const addressWallet =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
         const encryptPriKey = await AsyncStorage.getItem(
           STORAGE_KEYS.ENCRYPT_PRIKEY,
         );
@@ -134,7 +135,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
           setError(true);
           return;
         }
-        setWalletAddress({walletAddress: ownerAddress});
+        setWalletAddress({walletAddress: addressWallet});
         setIsSignIn(true);
       } else {
         let owner = ethers.Wallet.createRandom();
@@ -147,11 +148,11 @@ function SignIn({navigation, setIsSignIn}: Props) {
           abiFactory,
           ENV_FACTORY_ADDRESS,
         );
-        setWalletAddress({walletAddress: owner.address});
+
         const accountAddress = await factoryContract.methods
           .getAddress(owner.address, randomBigNumber)
           .call();
-
+        setWalletAddress({walletAddress: accountAddress});
         // check address exist on chain
         const code = await web3.eth.getCode(accountAddress);
         console.log(code, 'code');
@@ -200,11 +201,11 @@ function SignIn({navigation, setIsSignIn}: Props) {
         abiFactory,
         ENV_FACTORY_ADDRESS,
       );
-      setWalletAddress({walletAddress: owner.address});
+
       const accountAddress = await factoryContract.methods
         .getAddress(owner.address, randomBigNumber)
         .call();
-
+      setWalletAddress({walletAddress: accountAddress});
       // check address exist on chain
       const code = await web3.eth.getCode(accountAddress);
       console.log(code, 'code');

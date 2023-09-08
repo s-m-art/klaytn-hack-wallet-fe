@@ -26,12 +26,17 @@ import Web3 from 'web3';
 import {STORAGE_KEYS} from '../constants/index';
 import {SignModal} from '../components/Modals/SignModal';
 import {SignTypedDataModal} from '../components/Modals/SignTypedDataModal';
+import BigNumber from 'bignumber.js';
 
 // import {signUserOpWeb3} from '../utils/signUserOp';
 
 const Tab = createBottomTabNavigator();
 
-function Home() {
+interface Props {
+  navigation: any;
+}
+
+function Home({navigation}: Props) {
   // Modal Visible State
   const [approvalModal, setApprovalModal] = useState(false);
   const [signModal, setSignModal] = useState(false);
@@ -41,7 +46,6 @@ function Home() {
   const [successPair, setSuccessPair] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [balance, setBalance] = useState<string>('0');
-
   // Pairing State
   const [pairedProposal, setPairedProposal] =
     useState<SignClientTypes.EventArguments['session_proposal']>();
@@ -159,23 +163,32 @@ function Home() {
     },
     [],
   );
+  const fetchData = async () => {
+    try {
+      const web3 = new Web3(ENV_RPC);
+      const address = (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+      console.log(address, 'address');
+
+      const balanceData: string = await web3.eth.getBalance(address);
+      const balanceFormat = new BigNumber(balanceData).dividedBy(
+        new BigNumber(10).pow(new BigNumber(18)),
+      );
+      setBalance(balanceFormat.toFormat(2));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const web3 = new Web3(ENV_RPC);
-        const address =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-
-        const balanceData: string = await web3.eth.getBalance(address);
-        setBalance(balanceData);
-        console.log(balanceData, 'balanceData');
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchData();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     if (

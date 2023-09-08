@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   methodsContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#2B2F35',
     borderRadius: 20,
     padding: 8,
     display: 'flex',
@@ -37,10 +37,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     letterSpacing: 0.21,
-    color: '#585F5F',
+    color: '#fff',
   },
   methodEventsTitle: {
-    color: 'rgba(121, 134, 134, 1)',
+    color: '#fff',
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '600',
