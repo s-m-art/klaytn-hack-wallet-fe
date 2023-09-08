@@ -1,13 +1,14 @@
-import QRCodeScanner from 'react-native-qrcode-scanner';
 import React from 'react';
-import {Linking} from 'react-native';
+import QRCodeScanner from 'react-native-qrcode-scanner';
 import {RNCamera} from 'react-native-camera';
 
-const QRScanner = () => {
+interface Props {
+  onPair: (val: string) => void;
+}
+
+const QRScanner = ({onPair}: Props) => {
   const onSuccess = (e: any) => {
-    Linking.openURL(e.data)
-      .then(res => console.log(res))
-      .catch(err => console.error('An error occured', err));
+    onPair(e.data);
   };
 
   return (

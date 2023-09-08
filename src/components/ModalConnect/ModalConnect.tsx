@@ -40,7 +40,7 @@ const ModalConnect = ({modalVisible, setModalVisible, onPair}: Props) => {
             }}
             title="Scan QR Code"
           />
-          <QRScanner />
+          <QRScanner onPair={onPair} />
           <View style={styles.middle}>
             <View style={styles.line} />
             <Text style={styles.textOr}>or</Text>
