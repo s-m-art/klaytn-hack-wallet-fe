@@ -11,6 +11,7 @@ import {
 import styles from './index.style';
 import Header from '../Header/Header';
 import ComboBtn from '../ComboBtn/ComboBtn';
+import QRScanner from '../QRScanner';
 
 interface Props {
   modalVisible: boolean;
@@ -40,6 +41,7 @@ const ModalConnect = ({modalVisible, setModalVisible, onPair}: Props) => {
             }}
             title="Scan QR Code"
           />
+          <QRScanner />
           <View style={styles.middle}>
             <View style={styles.line} />
             <Text style={styles.textOr}>or</Text>
