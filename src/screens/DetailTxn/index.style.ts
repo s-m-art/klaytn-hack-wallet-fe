@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   infoWrap: {
-    paddingTop: 22,
+    paddingTop: 14,
   },
   itemWrap: {
     paddingBottom: 10,
@@ -43,20 +43,6 @@ const styles = StyleSheet.create({
   textValue: {
     fontWeight: '600',
     color: '#F8F2EC',
-  },
-  btnRemove: {
-    borderWidth: 1,
-    borderColor: '#6A6E73',
-    alignItems: 'center',
-    marginBottom: 30,
-    borderRadius: 100,
-  },
-  textRemove: {
-    paddingTop: 11,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#F8F2EC',
-    paddingBottom: 13,
   },
 });
 

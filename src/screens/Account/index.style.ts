@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   textExp: {
     fontSize: 14,
-    color: '#888889',
+    color: '#FF662B',
   },
   itemContainer: {
     flexDirection: 'row',
@@ -108,6 +108,11 @@ const styles = StyleSheet.create({
   status: {
     fontWeight: '500',
     color: '#00D987',
+  },
+  link: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#888889',
   },
   wrapTxnLeft: {
     flexDirection: 'row',

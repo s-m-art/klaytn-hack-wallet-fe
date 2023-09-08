@@ -60,7 +60,7 @@ const TransactionItem = ({item, navigation, isDetailPage}: Props) => {
           <Text style={styles.priceKlaytn}>{`-${convertPrice(
             value,
             'klaytn',
-          )} Klaytn`}</Text>
+          )} KLAY`}</Text>
           {!isDetailPage && (
             <Text style={styles.priceUSD}>{`-${convertPrice(
               value,

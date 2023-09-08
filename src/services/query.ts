@@ -19,8 +19,8 @@ const GET_DATA = gql`
 `;
 
 const GET_ALL_TRANSACTIONS = gql`
-  query GetAllTransactions {
-    transactionEntities {
+  query GetTransactionsBySender($sender: String!) {
+    transactionEntities(where: {sender: $sender}) {
       id
       value
       data
@@ -40,4 +40,31 @@ const GET_TRANSACTION = gql`
   }
 `;
 
-export {GET_TXN_HASH, GET_DATA, GET_ALL_TRANSACTIONS, GET_TRANSACTION};
+const GET_ALL_SESSIONS = gql`
+  query GetAllSessions {
+    sessionEntities {
+      id
+      startFrom
+      validUntil
+    }
+  }
+`;
+
+const GET_SESSION = gql`
+  query GetSessionById($sessionId: String!) {
+    sessionEntity(id: $sessionId) {
+      startFrom
+      validUntil
+      totalAmount
+    }
+  }
+`;
+
+export {
+  GET_TXN_HASH,
+  GET_DATA,
+  GET_ALL_TRANSACTIONS,
+  GET_TRANSACTION,
+  GET_ALL_SESSIONS,
+  GET_SESSION,
+};
