@@ -9,9 +9,10 @@ import BigNumber from 'bignumber.js';
 interface Props {
   item: Transaction;
   navigation?: any;
+  isDetailPage?: boolean;
 }
 
-const TransactionItem = ({item, navigation}: Props) => {
+const TransactionItem = ({item, navigation, isDetailPage}: Props) => {
   const {id, value, data} = item;
 
   const convertPrice = (value: string, currency: string) => {
@@ -29,7 +30,9 @@ const TransactionItem = ({item, navigation}: Props) => {
   };
 
   const goToDetail = () => {
-    navigation.navigate(ROUTES_BAR.DETAIL);
+    navigation.navigate(ROUTES_BAR.DETAIL, {
+      transactionId: id,
+    });
   };
 
   // eslint-disable-next-line react/no-unstable-nested-components
@@ -58,10 +61,12 @@ const TransactionItem = ({item, navigation}: Props) => {
             value,
             'klaytn',
           )} Klaytn`}</Text>
-          <Text style={styles.priceUSD}>{`-${convertPrice(
-            value,
-            'usd',
-          )} USD`}</Text>
+          {!isDetailPage && (
+            <Text style={styles.priceUSD}>{`-${convertPrice(
+              value,
+              'usd',
+            )} USD`}</Text>
+          )}
         </View>
       </View>
     </WrapForm>

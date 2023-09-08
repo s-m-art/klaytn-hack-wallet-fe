@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
   },
   wrapTxnRight: {
     gap: 2,
+    alignSelf: 'center',
   },
   priceKlaytn: {
     textAlign: 'right',

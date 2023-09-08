@@ -28,4 +28,16 @@ const GET_ALL_TRANSACTIONS = gql`
   }
 `;
 
-export {GET_TXN_HASH, GET_DATA, GET_ALL_TRANSACTIONS};
+const GET_TRANSACTION = gql`
+  query GetTransactionById($transactionId: String!) {
+    transactionEntity(id: $transactionId) {
+      sender
+      target
+      userOpHash
+      value
+      data
+    }
+  }
+`;
+
+export {GET_TXN_HASH, GET_DATA, GET_ALL_TRANSACTIONS, GET_TRANSACTION};

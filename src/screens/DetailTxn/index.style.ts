@@ -37,12 +37,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   textTilte: {
-    fontSize: 14,
     fontWeight: '400',
     color: '#C0BEBC',
   },
   textValue: {
-    fontSize: 14,
     fontWeight: '600',
     color: '#F8F2EC',
   },
