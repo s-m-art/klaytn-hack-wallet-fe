@@ -13,6 +13,14 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     color: '#F8F2EC',
   },
+  input: {
+    borderWidth: 1,
+    marginBottom: 12,
+    fontSize: 16,
+    borderColor: '#3E4247',
+    paddingLeft: 16,
+    borderRadius: 8,
+  },
   header: {
     marginTop: 15,
     position: 'relative',

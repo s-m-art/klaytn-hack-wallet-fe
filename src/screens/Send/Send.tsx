@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ImageBackground,
   Text,
@@ -12,20 +12,38 @@ import Layer from '../../../assets/icons/Layer_1.svg';
 
 import styles from './index.style';
 import ComboBtn from '../../components/ComboBtn/ComboBtn';
-import {ROUTES} from '../../constants';
+import {ROUTES, STORAGE_KEYS} from '../../constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props {
   navigation: any;
+  route: any;
 }
 
-const Send = ({navigation}: Props) => {
+const Send = ({navigation, route}: Props) => {
+  const [address, setAddress] = useState('');
+  const [target, setTarget] = useState('');
+  const [amount, setAmount] = useState('');
+  const {balance} = route.params;
+
   const goBack = () => {
     navigation.goBack();
   };
 
   const goContinue = () => {
-    navigation.navigate(ROUTES.CONFIRM);
+    navigation.navigate(ROUTES.CONFIRM, {
+      target,
+      amount,
+    });
   };
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      const addressValue = await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS);
+      setAddress(addressValue);
+    };
+    fetchAddress();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -48,7 +66,10 @@ const Send = ({navigation}: Props) => {
                 </View>
                 <View>
                   <Text style={styles.address}>User`s address</Text>
-                  <Text style={styles.value}>0xkjwd45bs351g...624d5qg</Text>
+                  <Text style={styles.value}>{`${address.slice(
+                    0,
+                    7,
+                  )}...${address.slice(-8)}`}</Text>
                 </View>
               </View>
               <View style={styles.wrapInfo}>
@@ -57,7 +78,7 @@ const Send = ({navigation}: Props) => {
                 </View>
                 <View>
                   <Text style={styles.address}>Klay`s balance</Text>
-                  <Text style={styles.value}>3.519,44</Text>
+                  <Text style={styles.value}>{balance}</Text>
                 </View>
               </View>
             </View>
@@ -69,12 +90,17 @@ const Send = ({navigation}: Props) => {
             placeholder="Target"
             placeholderTextColor={'#6A6E73'}
             style={styles.input}
+            value={target}
+            onChangeText={setTarget}
           />
 
           <TextInput
             placeholderTextColor={'#6A6E73'}
             placeholder="Amount"
             style={styles.input}
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={setAmount}
           />
         </View>
       </View>

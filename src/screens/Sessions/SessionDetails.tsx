@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import BigNumber from 'bignumber.js';
 import Header from '../../components/Header/Header';
@@ -6,7 +6,17 @@ import {useQuery} from '@apollo/client';
 import {GET_SESSION} from '../../services/query';
 import SessionItem from './SessionItem';
 import styles from './index.style';
-import {SESSION_TYPES} from '../../constants';
+import {SESSION_TYPES, STORAGE_KEYS} from '../../constants';
+import entryPointAbi from '../../abi/IEntryPoint.json';
+import {AbiItem} from 'web3-utils';
+
+import {TextInput} from 'react-native';
+import {getCallDataRemoveSession, signUserOpWeb3} from '../../utils/signUserOp';
+import {fillUserOp} from '../../utils/UserOp';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ENV_ENTRY_POINT_ADDRESS} from '@env';
+import {web3Global} from '../../utils/Web3WalletClient';
+import {requestToRelayer} from '../../services';
 
 interface Props {
   route: any;
@@ -15,12 +25,70 @@ interface Props {
 
 function SessionDetails({route, navigation}: Props) {
   const {sessionId, status} = route.params;
+  const [passcode, setPasscode] = useState('');
+  const [errorPasscode, setErrorPassCode] = useState(false);
+
   const {loading, error, data} = useQuery(GET_SESSION, {
     variables: {sessionId},
   });
 
   const goBack = () => {
     navigation.goBack();
+  };
+  console.log(data, 'data');
+
+  const handleRemoveSession = async () => {
+    try {
+      const msgData = getCallDataRemoveSession({
+        sessionUser: data.sessionEntity.sessionUser,
+      });
+      const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
+
+      const entryPointContract = new web3Global.eth.Contract(
+        abiEntrypoint,
+        ENV_ENTRY_POINT_ADDRESS,
+      );
+      const chainId = await web3Global.eth.getChainId();
+      const encryptPriKey = await AsyncStorage.getItem(
+        STORAGE_KEYS.ENCRYPT_PRIKEY,
+      );
+      const walletDecrypt = web3Global.eth.accounts.decrypt(
+        JSON.parse(encryptPriKey || '{}'),
+        passcode,
+      );
+      const {privateKey} = walletDecrypt;
+      if (!privateKey) {
+        setErrorPassCode(true);
+        return;
+      }
+      const accountAddress =
+        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+      const op2 = await fillUserOp(
+        {
+          sender: accountAddress,
+          initCode: '0x',
+          maxFeePerGas: '0',
+          maxPriorityFeePerGas: '0',
+          callData: msgData,
+          nonce: 1000,
+        },
+        entryPointContract,
+      );
+      const userOpSignedWeb3 = await signUserOpWeb3({
+        op: {
+          ...op2,
+          initCode: '0x',
+          nonce: 1000,
+        },
+        privateKey,
+        entryPoint: ENV_ENTRY_POINT_ADDRESS,
+        chainId,
+      });
+      await requestToRelayer(userOpSignedWeb3);
+      goBack();
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
 
   const convertPrice = (value: string) => {
@@ -63,9 +131,7 @@ function SessionDetails({route, navigation}: Props) {
       }
     }
   };
-
   const session = data.sessionEntity;
-
   return (
     <View style={styles.container}>
       <View style={styles.TopTier}>
@@ -100,7 +166,15 @@ function SessionDetails({route, navigation}: Props) {
           </View>
         </View>
       </View>
-      <TouchableOpacity>
+      <TextInput
+        placeholderTextColor={'#6A6E73'}
+        placeholder="passcode"
+        style={styles.input}
+        value={passcode}
+        onChangeText={setPasscode}
+      />
+      {errorPasscode && <Text>Wrong passcode</Text>}
+      <TouchableOpacity onPress={handleRemoveSession}>
         <View style={styles.btnRemove}>
           <Text style={styles.textRemove}>Remove</Text>
         </View>

@@ -1,8 +1,8 @@
 import React from 'react';
-import {ScrollView} from 'react-native';
 import TopAccount from './TopAccount';
 import styles from './index.style';
 import ListTxn from './ListTxn';
+import {View} from 'react-native';
 
 interface Props {
   navigation: any;
@@ -11,10 +11,10 @@ interface Props {
 
 function Account({navigation, balance}: Props) {
   return (
-    <ScrollView style={styles.container} bounces={false}>
+    <View style={styles.container}>
       <TopAccount balance={balance} navigation={navigation} />
       <ListTxn navigation={navigation} />
-    </ScrollView>
+    </View>
   );
 }
 

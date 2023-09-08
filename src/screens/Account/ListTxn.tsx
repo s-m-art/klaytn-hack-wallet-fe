@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {FlatList, Text, View} from 'react-native';
-import {useLazyQuery, useQuery} from '@apollo/client';
+import {useLazyQuery} from '@apollo/client';
 
 import {GET_ALL_TRANSACTIONS} from '../../services/query';
 import TransactionItem from './TransactionItem';

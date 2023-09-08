@@ -9,7 +9,9 @@ interface Props {
 }
 function TopAccount({navigation, balance}: Props) {
   const goSend = () => {
-    navigation.navigate(ROUTES.SEND);
+    navigation.navigate(ROUTES.SEND, {
+      balance,
+    });
   };
 
   const scaleValue = useRef(new Animated.Value(0.8)).current;

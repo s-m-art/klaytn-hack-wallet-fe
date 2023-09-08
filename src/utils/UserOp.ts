@@ -12,6 +12,7 @@ import {ENV_ENTRY_POINT_ADDRESS} from '@env';
 import {UserOperation} from '../constants/UserOperation';
 import {Create2Factory} from './Create2Factory';
 import {AddressZero, callDataCost, rethrow, version} from './operationUtils';
+import {ABI_FUNCTION} from '../abi';
 
 const web3 = new Web3();
 
@@ -328,7 +329,7 @@ export async function fillUserOp(
   const provider = new Web3(entryPointProvider);
   console.log(`provider:`, {provider});
 
-  if (op.initCode != null) {
+  if (op.initCode != null && op.initCode !== '0x') {
     const initAddr = hexDataSlice(op1.initCode!, 0, 20);
     const initCallData = hexDataSlice(op1.initCode!, 20);
     if (op1.nonce == null) op1.nonce = 0;
@@ -352,6 +353,9 @@ export async function fillUserOp(
 
     if (op1.verificationGasLimit == null) {
       if (provider == null) throw new Error('no entrypoint/provider');
+
+      console.log(ENV_ENTRY_POINT_ADDRESS, 'ENV_ENTRY_POINT_ADDRESS');
+
       const initEstimate = await provider.eth.estimateGas({
         from: ENV_ENTRY_POINT_ADDRESS,
         to: initAddr,
@@ -371,7 +375,7 @@ export async function fillUserOp(
     const c = new Contract(
       op.sender!,
       [`function ${getNonceFunction}() view returns(uint256)`],
-      provider,
+      entryPointProvider,
     );
     op1.nonce = await c[getNonceFunction]().catch(rethrow());
   }
@@ -437,13 +441,13 @@ export async function fillAndSign(
 export const getCallData = ({abiFunction, value}: any) =>
   web3.eth.abi.encodeFunctionCall(abiFunction, value);
 
-// export const getCallDataEntryPoint = ({value, target, msgDataEncode}: any) => {
-//   const msgData = web3.eth.abi.encodeFunctionCall(
-//     ABI_FUNCTION.EXEC_FROM_ENTRY_POINT,
-//     [target, value, msgDataEncode],
-//   );
-//   return msgData;
-// };
+export const getCallDataEntryPoint = ({value, target, msgDataEncode}: any) => {
+  const msgData = web3.eth.abi.encodeFunctionCall(
+    ABI_FUNCTION.EXEC_FROM_ENTRY_POINT,
+    [target, value, msgDataEncode],
+  );
+  return msgData;
+};
 export const signMessage = async (
   message: string,
   signer: any,

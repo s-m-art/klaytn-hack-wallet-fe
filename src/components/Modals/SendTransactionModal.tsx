@@ -101,10 +101,11 @@ export function SendTransactionModal({
         const op2 = await fillUserOp(
           {
             sender: accountAddress,
-            initCode,
+            initCode: '0x',
             maxFeePerGas: '0',
             maxPriorityFeePerGas: '0',
             callData: msgData,
+            nonce: 1000,
           },
           entryPointContract,
         );
@@ -119,24 +120,28 @@ export function SendTransactionModal({
           chainId,
         });
 
-        const dataRelayer = await requestToRelayer(userOpSignedWeb3);
-        console.log(dataRelayer, 'dataRelayer');
-        const {result: userOpHash} = dataRelayer;
-        // TODO
-        const res = await client.query({
+        await requestToRelayer(userOpSignedWeb3);
+        const userOpHash = await entryPointContract.methods
+          .getUserOpHash(userOpSignedWeb3)
+          .call();
+        const {data} = await client.query({
           query: GET_TXN_HASH,
           variables: {
             userOpHash,
           },
         });
-        // const data = res.data;
-        console.log(res, 'res');
+        if (!!data && data?.transactionEntities.length > 0) {
+          const {id: txnHash} = data.transactionEntities[0];
+          const response = formatJsonRpcResult(id, {
+            success: true,
+            msg: txnHash || '',
+          });
+          await web3wallet.respondSessionRequest({
+            topic,
+            response,
+          });
+        }
 
-        const response = formatJsonRpcResult(id, {success: true, msg: 'error'});
-        await web3wallet.respondSessionRequest({
-          topic,
-          response,
-        });
         setVisible(false);
         onRedirect();
       }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, ScrollView, Text, View} from 'react-native';
+import {FlatList, Text, View} from 'react-native';
 import {useQuery} from '@apollo/client';
 import {GET_ALL_SESSIONS} from '../../services/query';
 import SessionItem from './SessionItem';

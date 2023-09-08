@@ -22,7 +22,6 @@ interface Props {
 const ModalConnect = ({modalVisible, setModalVisible, onPair}: Props) => {
   const [isShowInput, setIsShowInput] = useState<boolean>(false);
   const [connectUri, setConnectUri] = useState<string>('');
-  console.log(modalVisible, 'modalVisible2');
 
   return (
     <Modal
@@ -62,7 +61,10 @@ const ModalConnect = ({modalVisible, setModalVisible, onPair}: Props) => {
                     setIsShowInput(false);
                     setConnectUri('');
                   }}
-                  onConfirm={() => onPair(connectUri)}
+                  onConfirm={() => {
+                    onPair(connectUri);
+                    setConnectUri('');
+                  }}
                   titleCancel="Cancel"
                   titleConfirm="Connect"
                 />

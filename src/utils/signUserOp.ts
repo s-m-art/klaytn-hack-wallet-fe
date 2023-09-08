@@ -154,3 +154,35 @@ export const getCallDataRemoveSession = ({sessionUser}: any) => {
   ]);
   return msgData;
 };
+
+export const getCallDataGetUserOpHash = (obSigned: any) => {
+  const {
+    sender,
+    nonce,
+    initCode,
+    callData,
+    callGasLimit,
+    verificationGasLimit,
+    preVerificationGas,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    paymasterAndData,
+    signature,
+  } = obSigned;
+  const msgData = web3.eth.abi.encodeFunctionCall(ABI_FUNCTION.USER_OP_ABI, [
+    [
+      sender,
+      nonce,
+      initCode,
+      callData,
+      callGasLimit,
+      verificationGasLimit,
+      preVerificationGas,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      paymasterAndData,
+      signature,
+    ] as any,
+  ]);
+  return msgData;
+};
