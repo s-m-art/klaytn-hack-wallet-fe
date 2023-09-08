@@ -26,18 +26,9 @@ export const requestToRelayer = async (params: Params) => {
     method: 'eth_sendUserOperation',
     params: [params, ENV_ENTRY_POINT_ADDRESS],
   };
-  //   const jsonString = JSON.stringify(jsonData);
+
   try {
-    console.log('hihi');
-
-    console.log(RELAYER_URL, 'RELAYER_URL');
-    console.log(jsonData, 'jsonData');
-
-    const res = await axios.post(
-      'https://e049-118-70-67-134.ngrok.io',
-      jsonData,
-    );
-
+    const res = await axios.post(RELAYER_URL, jsonData);
     return res.data;
   } catch (error) {
     return {

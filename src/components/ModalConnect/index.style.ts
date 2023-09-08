@@ -20,6 +20,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   wrapInput: {},
+  qrContainer: {
+    width: '100%',
+    flex: 1,
+  },
   line: {
     flex: 1,
     height: 2,

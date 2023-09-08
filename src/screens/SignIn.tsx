@@ -104,10 +104,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
       entryPoint: ENV_ENTRY_POINT_ADDRESS,
       chainId,
     });
-    console.log(userOpSignedWeb3, 'userOpSignedWeb3');
-    const data = await requestToRelayer(userOpSignedWeb3);
-
-    console.log(data, 'data');
+    await requestToRelayer(userOpSignedWeb3);
   };
 
   const handleCreateWallet = async () => {
@@ -155,7 +152,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
         setWalletAddress({walletAddress: accountAddress});
         // check address exist on chain
         const code = await web3.eth.getCode(accountAddress);
-        console.log(code, 'code');
         const notDeployed = code === '0x';
 
         await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
@@ -165,7 +161,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
           STORAGE_KEYS.ENCRYPT_PRIKEY,
           JSON.stringify(encryptPrikey),
         );
-        setIsSignIn(true);
         if (notDeployed) {
           await deployWallet({
             accountAddress,
@@ -174,6 +169,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
             web3,
           });
         }
+        setIsSignIn(true);
       }
     } catch {
       setError(true);
@@ -208,7 +204,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
       setWalletAddress({walletAddress: accountAddress});
       // check address exist on chain
       const code = await web3.eth.getCode(accountAddress);
-      console.log(code, 'code');
       const notDeployed = code === '0x';
 
       await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
