@@ -1,6 +1,6 @@
 // src/apollo.ts
-import {GRAPHQL_ENDPOINT} from '@env';
 import {ApolloClient, InMemoryCache} from '@apollo/client';
+import {GRAPHQL_ENDPOINT} from '@env';
 
 const client = new ApolloClient({
   uri: GRAPHQL_ENDPOINT,

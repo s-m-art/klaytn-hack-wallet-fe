@@ -27,6 +27,7 @@ const config = {
       // crypto: require.resolve('crypto-browserify'),
     },
   },
+  resetCache: true,
 };
 
 module.exports = mergeConfig(defaultConfig, config);

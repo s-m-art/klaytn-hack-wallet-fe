@@ -5,4 +5,10 @@ type TxnData = {
   endDate: string;
 };
 
-export type {TxnData};
+type Transaction = {
+  id: string;
+  value: string;
+  data: string;
+};
+
+export type {TxnData, Transaction};

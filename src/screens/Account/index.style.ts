@@ -92,22 +92,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#2B2F35',
     borderRadius: 10,
   },
-  img: {width: 40, height: 40},
+  img: {width: 40, height: 40, borderRadius: 6},
   wrapName: {
     marginLeft: 10,
+    gap: 4,
   },
   date: {
     fontSize: 12,
     fontWeight: '400',
   },
   name: {
-    fontSize: 14,
     fontWeight: '700',
-    marginBottom: 4,
     color: '#F8F2EC',
+  },
+  status: {
+    fontWeight: '500',
+    color: '#00D987',
   },
   wrapTxnLeft: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  wrapTxnRight: {
+    gap: 2,
+  },
+  priceKlaytn: {
+    textAlign: 'right',
+    fontWeight: '700',
+    letterSpacing: 0.1,
+    color: '#F8F2EC',
+  },
+  priceUSD: {
+    fontWeight: '500',
+    color: '#C0BEBC',
+    letterSpacing: 0.1,
+    textAlign: 'right',
   },
   ldsRipple: {
     display: 'flex',

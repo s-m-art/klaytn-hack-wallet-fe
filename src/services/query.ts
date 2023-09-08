@@ -18,4 +18,14 @@ const GET_DATA = gql`
   }
 `;
 
-export {GET_TXN_HASH, GET_DATA};
+const GET_ALL_TRANSACTIONS = gql`
+  query GetAllTransactions {
+    transactionEntities {
+      id
+      value
+      data
+    }
+  }
+`;
+
+export {GET_TXN_HASH, GET_DATA, GET_ALL_TRANSACTIONS};
