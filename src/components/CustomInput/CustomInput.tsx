@@ -29,7 +29,7 @@ const CustomInput: FC<propTypes> = props => {
           placeholder={props.placeHolder}
           placeholderTextColor={COLOR.neutral_1}
           value={props.value}
-          secureTextEntry={visibility && props.isPassword}
+          secureTextEntry={props?.isPassword && !visibility}
           onChangeText={text => setValue(text)}
         />
       </View>

@@ -32,6 +32,10 @@ const styles = StyleSheet.create({
   },
   input: {width: '100%'},
   wrapInput: {display: 'flex', gap: 12, width: '100%'},
+  textError: {
+    color: '#FF662B',
+    fontSize: 12,
+  },
   btn: {
     borderRadius: 100,
     padding: 15,

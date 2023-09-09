@@ -17,6 +17,7 @@
     "@json-rpc-tools/utils": "1.7.6",
     "@react-native-async-storage/async-storage": "1.19.1",
     "@react-native-community/cli-platform-android": "^11.3.7",
+    "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native/gradle-plugin": "^0.72.11",
     "@react-navigation/bottom-tabs": "^6.5.8",

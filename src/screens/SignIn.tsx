@@ -50,7 +50,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
   const {randomBigNumber} = useNumbers();
   const [existWallet, setExistWallet] = useState<boolean | null>(null);
   const [error, setError] = useState<boolean>(false);
-
   const [signInInfo, setSignInInfo] = useState({
     passcode: '',
   });
@@ -58,6 +57,7 @@ function SignIn({navigation, setIsSignIn}: Props) {
 
   const onChangeSigninInfo = (field: string, value: string) => {
     setSignInInfo(prev => ({...prev, [field]: value}));
+    setError(false);
   };
 
   const onSignUp = () => {
@@ -108,6 +108,13 @@ function SignIn({navigation, setIsSignIn}: Props) {
   };
 
   const handleCreateWallet = async () => {
+    setError(false);
+
+    if (!signInInfo.passcode) {
+      setError(true);
+      return;
+    }
+
     setLoading(true);
     if (!signInInfo) {
       return;
@@ -257,12 +264,12 @@ function SignIn({navigation, setIsSignIn}: Props) {
               placeHolder="Passcode"
               LeftAdornment={LockIcon}
               styles={styles.input}
-              isPassword={true}
+              isPassword
               setValue={(text: string) => onChangeSigninInfo('passcode', text)}
               value={signInInfo.passcode}
             />
+            {error && <Text style={styles.textError}>Wrong passcode</Text>}
           </View>
-          <View>{error && <Text>Wrong Passcode</Text>}</View>
         </View>
         <View style={styles.login}>
           <TouchableOpacity
@@ -281,19 +288,19 @@ function SignIn({navigation, setIsSignIn}: Props) {
             <View style={styles.wrapTextBottom}>
               <Text style={styles.dontAcc}>Don't have an account?</Text>
               <Text style={styles.signUp} onPress={onSignUp}>
-                Sign Up
+                Register
               </Text>
             </View>
           </View>
         </View>
 
         {/* ==============Fake btn====================== */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           disabled={loading}
           style={styles.btn}
           onPress={createWalletFake}>
           <Text style={styles.loginBtn}>DEMO</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* =================================================== */}
       </View>
