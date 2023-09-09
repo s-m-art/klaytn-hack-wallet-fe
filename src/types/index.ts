@@ -10,4 +10,9 @@ type Transaction = {
   data: string;
 };
 
-export type {SessionData, Transaction};
+type PairData = {
+  peerMetadata: any;
+  expiry: string;
+};
+
+export type {SessionData, Transaction, PairData};

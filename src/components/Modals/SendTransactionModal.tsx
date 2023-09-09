@@ -1,11 +1,8 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, TextInput, Text} from 'react-native';
+import {View, StyleSheet, TextInput, Text, Image} from 'react-native';
 import Modal from 'react-native-modal';
 import {SignClientTypes} from '@walletconnect/types';
-import {Tag} from '../Tag';
-import {Methods} from '../Modal/Methods';
 import {Message} from '../Modal/Message';
-import {ModalHeader} from '../Modal/ModalHeader';
 import {rejectEIP155Request} from '../../utils/EIP155Request';
 import {ENV_ENTRY_POINT_ADDRESS, ENV_FACTORY_ADDRESS} from '@env';
 
@@ -24,6 +21,7 @@ import {fillUserOp} from '../../utils/UserOp';
 import {formatJsonRpcResult} from '@json-rpc-tools/utils';
 import {useApolloClient} from '@apollo/client';
 import {GET_TXN_HASH} from '../../services/query';
+import BigNumber from 'bignumber.js';
 
 interface SendTransactionModalProps {
   visible: boolean;
@@ -163,22 +161,77 @@ export function SendTransactionModal({
     }
   }
 
+  const convertPrice = (value: string) => {
+    const price = new BigNumber(BigInt(value).toString()).dividedBy(
+      BigNumber(10).pow(BigNumber(18)),
+    );
+
+    return `${price.toString(10)} KLAY`;
+  };
+
+  const formatDate = (timestampInSeconds: any) => {
+    const date = new Date(timestampInSeconds * 1000);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const year = date.getUTCFullYear();
+
+    return `${hours}:${minutes} ${day}/${month}/${year}`;
+  };
+
   return (
     <Modal backdropOpacity={0.6} isVisible={visible}>
       <View style={styles.modalContainer}>
-        <ModalHeader name={requestName} url={requestURL} icon={requestIcon} />
-
-        <View style={styles.divider} />
+        <Text style={styles.textWelcome}>
+          {requestName} is requesting a session key to perform actions on your
+          wallet.
+        </Text>
+        <Text style={styles.textWelcome}>
+          By providing the session key, you grant the app limited access to your
+          wallet for the specified actions
+        </Text>
+        <Text style={styles.textSuggest}>
+          Please review the details below before proceeding:
+        </Text>
 
         <View style={styles.chainContainer}>
-          <View style={styles.flexRowWrapped}>
-            <Tag value={chainID} grey={true} />
+          <View style={styles.metadata1}>
+            <Image
+              source={require('../../../assets/WalletConnect.png')}
+              style={styles.logo}
+            />
+            <View>
+              <Text style={styles.name}>{requestName}</Text>
+              <Text style={styles.uri}>{requestURL}</Text>
+            </View>
           </View>
-          <Methods methods={[method]} />
-          <Message message={JSON.stringify(transaction, null, 2)} />
+          <View style={styles.divider} />
+          <View style={styles.wrap}>
+            <Text style={styles.textKey}>Network</Text>
+            <Text style={styles.textValue}>Klaytn</Text>
+          </View>
+          <View style={styles.wrap}>
+            <Text style={styles.textKey}>Valid from</Text>
+            <Text style={styles.textValue}>
+              {formatDate(transaction.validAfter)}
+            </Text>
+          </View>
+          <View style={styles.wrap}>
+            <Text style={styles.textKey}>Valid until</Text>
+            <Text style={styles.textValue}>
+              {formatDate(transaction.validUntil)}
+            </Text>
+          </View>
+          <View style={styles.wrap}>
+            <Text style={styles.textKey}>Max amount</Text>
+            <Text style={styles.textValue}>
+              {convertPrice(transaction.maxAmount)}
+            </Text>
+          </View>
         </View>
         <View style={styles.wrapPasscode}>
-          <Text style={styles.passcode}>Passcode</Text>
+          <Text style={styles.passcode}>Enter your passcode</Text>
           <TextInput
             onChangeText={setPasscode}
             value={passcode}
@@ -190,8 +243,8 @@ export function SendTransactionModal({
           styleContainer={styles.chain}
           onCancel={onReject}
           onConfirm={onApprove}
-          titleCancel="Decline"
-          titleConfirm="Accept"
+          titleCancel="Cancel"
+          titleConfirm="Submit"
         />
       </View>
     </Modal>
@@ -199,46 +252,88 @@ export function SendTransactionModal({
 }
 
 const styles = StyleSheet.create({
-  chain: {
-    display: 'flex',
+  textWelcome: {
+    marginBottom: 8,
+    textAlign: 'left',
+    color: '#C0BEBC',
+    letterSpacing: 0.1,
+  },
+  textSuggest: {
+    color: '#F8F2EC',
+    letterSpacing: 0.1,
+    fontWeight: '500',
+  },
+  metadata1: {
     flexDirection: 'row',
-    paddingTop: 10,
-    paddingBottom: 10,
+    gap: 10,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    objectFit: 'contain',
+  },
+  name: {
+    color: '#F8F2EC',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  uri: {
+    fontSize: 12,
+    color: '#888889',
+    marginTop: 4,
+  },
+  divider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#3E4247',
+  },
+  wrap: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  textKey: {
+    color: '#C0BEBC',
+  },
+  textValue: {
+    color: '#F8F2EC',
+    fontWeight: '600',
+  },
+  chain: {
+    flexDirection: 'row',
+    gap: 10,
+    marginVertical: 20,
   },
   input: {
     borderWidth: 1,
     borderColor: 'white',
-    width: '90%',
+    width: '100%',
     borderRadius: 10,
+    color: '#F8F2EC',
+    paddingHorizontal: 16,
   },
   wrapPasscode: {
-    width: '90%',
+    width: '100%',
   },
   passcode: {
     textAlign: 'left',
-    marginBottom: 10,
+    marginBottom: 8,
+    fontWeight: '500',
+    color: '#F8F2EC',
   },
   chainContainer: {
-    width: '90%',
-    padding: 10,
-    borderRadius: 25,
-    backgroundColor: 'rgba(80, 80, 89, 0.1)',
-  },
-  flexRow: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  flexRowWrapped: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    marginVertical: 24,
+    width: '100%',
+    paddingTop: 14,
+    paddingBottom: 18,
+    paddingHorizontal: 14,
+    gap: 16,
+    backgroundColor: '#2B2F35',
+    borderRadius: 10,
   },
   modalContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 34,
     backgroundColor: 'rgba(31, 35, 41, 1)',
     width: '100%',
@@ -246,23 +341,6 @@ const styles = StyleSheet.create({
     minHeight: '70%',
     position: 'absolute',
     bottom: 44,
-  },
-  rejectButton: {
-    color: 'red',
-  },
-  dappTitle: {
-    fontSize: 22,
-    lineHeight: 28,
-    fontWeight: '700',
-  },
-  imageContainer: {
-    width: 48,
-    height: 48,
-  },
-  divider: {
-    height: 1,
-    width: '100%',
-    backgroundColor: 'rgba(60, 60, 67, 0.36)',
-    marginVertical: 16,
+    paddingHorizontal: 20,
   },
 });

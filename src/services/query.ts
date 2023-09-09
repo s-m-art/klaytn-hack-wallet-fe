@@ -41,8 +41,8 @@ const GET_TRANSACTION = gql`
 `;
 
 const GET_ALL_SESSIONS = gql`
-  query GetAllSessions {
-    sessionEntities {
+  query GetSessionsBySender($sender: String!) {
+    sessionEntities(where: {sender: $sender}) {
       id
       startFrom
       validUntil

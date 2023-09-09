@@ -1,10 +1,8 @@
 import React from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, Image} from 'react-native';
 import Modal from 'react-native-modal';
 import {Events} from '../Modal/Events';
 import {Methods} from '../Modal/Methods';
-import {ModalHeader} from '../Modal/ModalHeader';
-import {Tag} from '../Tag';
 import ComboBtn from '../ComboBtn/ComboBtn';
 
 interface PairModalProps {
@@ -33,30 +31,27 @@ export function PairModal({
 }: PairModalProps) {
   // Note: Current namespaces is for EIP155 only (i.e. methods, events, chains)
   const name = proposal?.params?.proposer?.metadata?.name;
-  const url = proposal?.params?.proposer?.metadata.url;
   const methods = proposal?.params?.requiredNamespaces.eip155.methods;
   const events = proposal?.params?.requiredNamespaces.eip155.events;
-  const chains = proposal?.params?.requiredNamespaces.eip155.chains;
-  const icon = proposal?.params.proposer.metadata.icons[0];
 
   return (
     <Modal isVisible={visible} hideModalContentWhileAnimating>
       <View style={styles.container}>
         <View style={styles.modalContainer}>
-          <ModalHeader name={name} url={url} icon={icon} />
-
-          <View style={styles.divider} />
-          <Text style={styles.permissionsText}>REQUESTED PERMISSIONS:</Text>
+          <View style={styles.imageContainer}>
+            <Image
+              source={require('../../../assets/WalletConnect.png')}
+              style={styles.logo}
+            />
+          </View>
+          <Text style={styles.textWelcome}>
+            You are attempting to log in to {name}.
+          </Text>
+          <Text style={styles.permissionsText}>
+            Do you want to proceed with this login request?
+          </Text>
 
           <View style={styles.chainContainer}>
-            <View style={styles.flexRowWrapped}>
-              {chains?.map((chain: string, index: number) => {
-                return (
-                  <Tag key={index} value={chain.toUpperCase()} grey={true} />
-                );
-              })}
-            </View>
-
             <Methods methods={methods} />
             <Events events={events} />
           </View>
@@ -65,8 +60,8 @@ export function PairModal({
             styleContainer={styles.chain}
             onCancel={handleDecline}
             onConfirm={handleAccept}
-            titleCancel="Decline"
-            titleConfirm="Accept"
+            titleCancel="Reject"
+            titleConfirm="Approve"
           />
         </View>
       </View>
@@ -76,10 +71,9 @@ export function PairModal({
 
 const styles = StyleSheet.create({
   chain: {
-    display: 'flex',
     flexDirection: 'row',
-    paddingTop: 10,
-    paddingBottom: 10,
+    gap: 10,
+    marginVertical: 20,
   },
   container: {
     flex: 1,
@@ -90,13 +84,6 @@ const styles = StyleSheet.create({
   flexRow: {
     flex: 1,
     flexDirection: 'row',
-  },
-  flexRowWrapped: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
   },
   modalContainer: {
     display: 'flex',
@@ -111,22 +98,29 @@ const styles = StyleSheet.create({
     bottom: 44,
   },
   permissionsText: {
-    color: 'white',
-    fontSize: 14,
-    lineHeight: 16,
-    fontWeight: '400',
-    paddingBottom: 8,
+    color: '#FF662B',
+    letterSpacing: 0.1,
+    fontWeight: '500',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   chainContainer: {
-    width: '90%',
-    padding: 10,
-    borderRadius: 25,
-    backgroundColor: 'rgba(80, 80, 89, 0.1)',
-  },
-  divider: {
-    height: 1,
     width: '100%',
-    backgroundColor: 'rgba(60, 60, 67, 0.36)',
-    marginVertical: 16,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  textWelcome: {
+    color: '#C0BEBC',
+    letterSpacing: 0.1,
+    textAlign: 'center',
+  },
+  imageContainer: {
+    width: 60,
+    height: 70,
+    marginBottom: 20,
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
   },
 });

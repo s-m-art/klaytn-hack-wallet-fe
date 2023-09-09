@@ -6,7 +6,6 @@ export let web3wallet: IWeb3Wallet;
 export let core: ICore;
 export let currentETHAddress: string;
 export let web3Global: Web3;
-// @ts-expect-error - env is a virtualised module via Babel config.
 import {ENV_PROJECT_ID, ENV_RELAY_URL} from '@env';
 
 // import {createOrRestoreEIP155Wallet} from './EIP155Wallet';
@@ -26,17 +25,11 @@ export async function createWeb3Wallet() {
     relayUrl: ENV_RELAY_URL,
   });
 
-  // const {eip155Addresses} = await createOrRestoreEIP155Wallet();
-  // currentETHAddress =
-  // console.log('1111111111111111111111');
-  // currentETHAddress = eip155Addresses[0];
-  // console.log(eip155Addresses, 'eip155Addresses');
-
   web3wallet = await Web3Wallet.init({
     core,
     metadata: {
-      name: 'React Native Web3Wallet',
-      description: 'ReactNative Web3Wallet',
+      name: 'JustWallet',
+      description: 'Wallet Connect',
       url: 'https://walletconnect.com/',
       icons: ['https://avatars.githubusercontent.com/u/37784886'],
       redirect: {
@@ -57,3 +50,8 @@ export function setWalletAddress({walletAddress}: TypeCreate) {
 export async function _pair(params: {uri: string}) {
   return await core.pairing.pair({uri: params.uri});
 }
+
+export const getPairings = () => {
+  const pairings = core.pairing.getPairings();
+  return pairings;
+};

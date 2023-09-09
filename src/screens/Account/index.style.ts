@@ -184,6 +184,9 @@ const styles = StyleSheet.create({
   rippleInnerDelayed: {
     marginLeft: -10,
   },
+  textEmpty: {
+    color: '#888889',
+  },
 });
 
 export default styles;

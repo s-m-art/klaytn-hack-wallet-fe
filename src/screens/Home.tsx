@@ -1,34 +1,31 @@
 import React, {Suspense, useCallback, useEffect, useState} from 'react';
-// import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BigNumber from 'bignumber.js';
+import {ENV_RPC} from '@env';
+import Web3 from 'web3';
+import {getSdkError} from '@walletconnect/utils';
+
 import Account from './Account/Account';
 import {MyTabBar} from '../components/Tabbar';
 import {ROUTES_BAR} from '../constants';
 import Sessions from './Sessions/Sessions';
-import Pairing from './Pairing';
+import Pairing from './Pairing/Pairing';
 import Settings from './Settings/Setting';
 import {SignClientTypes, SessionTypes} from '@walletconnect/types';
 import {currentETHAddress, web3wallet, _pair} from '../utils/Web3WalletClient';
-import {getSdkError} from '@walletconnect/utils';
 import {EIP155_SIGNING_METHODS} from '../data/EIP155';
 import {handleDeepLinkRedirect} from '../utils/LinkingUtils';
 import {ActivityIndicator, View} from 'react-native';
 import {PairModal} from '../components/Modals/PairModal';
 import {SendTransactionModal} from '../components/Modals/SendTransactionModal';
-const ModalConnect = React.lazy(
-  () => import('../components/ModalConnect/ModalConnect'),
-);
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {ENV_RPC} from '@env';
-
-import Web3 from 'web3';
 import {STORAGE_KEYS} from '../constants/index';
 import {SignModal} from '../components/Modals/SignModal';
 import {SignTypedDataModal} from '../components/Modals/SignTypedDataModal';
-import BigNumber from 'bignumber.js';
 
-// import {signUserOpWeb3} from '../utils/signUserOp';
+const ModalConnect = React.lazy(
+  () => import('../components/ModalConnect/ModalConnect'),
+);
 
 const Tab = createBottomTabNavigator();
 
@@ -37,7 +34,6 @@ interface Props {
 }
 
 function Home({navigation}: Props) {
-  // Modal Visible State
   const [approvalModal, setApprovalModal] = useState(false);
   const [signModal, setSignModal] = useState(false);
   const [signTypedDataModal, setSignTypedDataModal] = useState(false);
@@ -92,7 +88,6 @@ function Home({navigation}: Props) {
         relayProtocol: relays[0].protocol,
         namespaces,
       });
-
       setApprovalModal(false);
       setSuccessPair(true);
 
@@ -101,18 +96,17 @@ function Home({navigation}: Props) {
     }
   }
 
-  // const handleCancel = () => {
-  //   setCopyDialog(false);
-  // };
-
   async function pair(uri: string) {
-    const pairing = await _pair({uri});
-    // setCopyDialog(false);
+    setApprovalModal(true);
 
-    // @notice iOS has an issue with modals, so we need to delay the approval modal
+    const pairing = await _pair({uri});
+    console.log('1111');
+
     setTimeout(() => {
       setApprovalModal(true);
     }, 1200);
+    console.log('pairing', pairing);
+
     return pairing;
   }
 
@@ -121,8 +115,6 @@ function Home({navigation}: Props) {
     setModalVisible(false);
   };
 
-  // ToDo / Consider: How best to move onSessionProposal() + onSessionRequest() + the if statement Listeners.
-  // Know there is an events config we did in web-examples app
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
       setPairedProposal(proposal);
@@ -167,8 +159,6 @@ function Home({navigation}: Props) {
     try {
       const web3 = new Web3(ENV_RPC);
       const address = (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-      console.log(address, 'address');
-
       const balanceData: string = await web3.eth.getBalance(address);
       const balanceFormat = new BigNumber(balanceData).dividedBy(
         new BigNumber(10).pow(new BigNumber(18)),

@@ -29,6 +29,10 @@ function ListTransactions({navigation}: Props) {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;
 
+  const showEmptyText = () => (
+    <Text style={styles.textEmpty}>You don't have any transactions</Text>
+  );
+
   const transactions = data?.transactionEntities;
 
   return (
@@ -39,6 +43,7 @@ function ListTransactions({navigation}: Props) {
         renderItem={({item}) => (
           <TransactionItem key={item.id} navigation={navigation} item={item} />
         )}
+        ListEmptyComponent={showEmptyText()}
       />
     </View>
   );

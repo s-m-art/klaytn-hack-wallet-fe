@@ -85,6 +85,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FF662B',
   },
+  textEmpty: {
+    color: '#888889',
+  },
 });
 
 export default styles;

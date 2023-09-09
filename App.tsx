@@ -20,6 +20,7 @@ import Send from './src/screens/Send/Send';
 import Confirm from './src/screens/Confirm/Confirm';
 import useInitialization from './src/hooks/useInitialization';
 import SessionDetails from './src/screens/Sessions/SessionDetails';
+import PairingDetails from './src/screens/Pairing/PairingDetails';
 
 const Stack = createStackNavigator();
 
@@ -49,6 +50,10 @@ function App(): JSX.Element {
               <Stack.Screen
                 name={ROUTES_BAR.SESSION_DETAILS}
                 component={SessionDetails}
+              />
+              <Stack.Screen
+                name={ROUTES_BAR.PAIRING_DETAILS}
+                component={PairingDetails}
               />
             </>
           ) : (

@@ -15,6 +15,7 @@ const ROUTES_BAR = {
   SETTINGS: 'Settings',
   DETAIL: 'Detail',
   SESSION_DETAILS: 'SessionDetails',
+  PAIRING_DETAILS: 'PairingDetails',
 };
 
 const STORAGE_KEYS = {

@@ -35,7 +35,6 @@ function SessionDetails({route, navigation}: Props) {
   const goBack = () => {
     navigation.goBack();
   };
-  console.log(data, 'data');
 
   const handleRemoveSession = async () => {
     try {
