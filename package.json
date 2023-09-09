@@ -9,13 +9,16 @@
     "start": "react-native start",
     "test": "jest",
     "androidClean": "cd android && ./gradlew clean && cd ../ && react-native run-android",
+    "postinstall": "cp patches/pbkdf2.js node_modules/@ethersproject/pbkdf2/lib.esm/pbkdf2.js && cp patches/browser-pbkdf2.js node_modules/@ethersproject/pbkdf2/lib/browser-pbkdf2.js",
     "buildApk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../"
   },
   "dependencies": {
     "@apollo/client": "^3.8.3",
+    "@craftzdog/react-native-buffer": "^6.0.5",
     "@ethersproject/shims": "^5.7.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@react-native-async-storage/async-storage": "1.19.1",
+    "@react-native-community/cli-debugger-ui": "^11.3.7",
     "@react-native-community/cli-platform-android": "^11.3.7",
     "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/masked-view": "^0.1.11",
@@ -47,6 +50,8 @@
     "react-native-modal": "13.0.1",
     "react-native-permissions": "3.6.0",
     "react-native-qrcode-scanner": "^1.5.5",
+    "react-native-quick-base64": "^2.0.7",
+    "react-native-quick-crypto": "^0.6.1",
     "react-native-randombytes": "^3.6.1",
     "react-native-reanimated": "^3.4.2",
     "react-native-safe-area-context": "^4.7.1",
@@ -88,7 +93,7 @@
     "node": ">=16"
   },
   "react-native": {
-    "crypto": "react-native-crypto",
+    "crypto": "react-native-quick-crypto",
     "_stream_transform": "readable-stream/transform",
     "_stream_readable": "readable-stream/readable",
     "_stream_writable": "readable-stream/writable",
@@ -97,7 +102,7 @@
     "stream": "stream-browserify"
   },
   "browser": {
-    "crypto": "react-native-crypto",
+    "crypto": "react-native-quick-crypto",
     "_stream_transform": "readable-stream/transform",
     "_stream_readable": "readable-stream/readable",
     "_stream_writable": "readable-stream/writable",

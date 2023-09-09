@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Text, TouchableOpacity, View} from 'react-native';
 
 import styles from './index.style';
 
@@ -11,6 +11,7 @@ interface Props {
   styleContainer?: any;
   styleBtnConfirm?: any;
   styleBtnCancel?: any;
+  disabledConfirm?: boolean;
 }
 
 const ComboBtn = ({
@@ -21,6 +22,7 @@ const ComboBtn = ({
   styleContainer,
   styleBtnConfirm = {},
   styleBtnCancel = {},
+  disabledConfirm = false,
 }: Props) => {
   return (
     <View style={styleContainer ?? styles.wrapBtn}>
@@ -30,9 +32,14 @@ const ComboBtn = ({
         <Text style={styles.textBtn}>{titleCancel}</Text>
       </TouchableOpacity>
       <TouchableOpacity
+        disabled={disabledConfirm}
         onPress={onConfirm}
         style={{...styles.btnConfirm, ...styleBtnConfirm}}>
-        <Text style={styles.textBtn}>{titleConfirm}</Text>
+        {disabledConfirm ? (
+          <ActivityIndicator size="large" color="#fff" />
+        ) : (
+          <Text style={styles.textBtn}>{titleConfirm}</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

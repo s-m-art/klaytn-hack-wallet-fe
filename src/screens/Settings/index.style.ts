@@ -13,6 +13,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  btnLogout: {
+    backgroundColor: '#FF662B',
+    paddingVertical: 10,
+    borderRadius: 50,
+  },
+  textLogout: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: 'white',
+  },
   itemSetting: {},
 });
 

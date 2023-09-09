@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
 import BigNumber from 'bignumber.js';
 import Header from '../../components/Header/Header';
 import {useQuery} from '@apollo/client';
-import {GET_SESSION} from '../../services/query';
+import {GET_SESSION, GET_TXN_HASH} from '../../services/query';
 import SessionItem from './SessionItem';
 import styles from './index.style';
 import {SESSION_TYPES, STORAGE_KEYS} from '../../constants';
@@ -15,8 +15,10 @@ import {getCallDataRemoveSession, signUserOpWeb3} from '../../utils/signUserOp';
 import {fillUserOp} from '../../utils/UserOp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ENV_ENTRY_POINT_ADDRESS} from '@env';
-import {web3Global} from '../../utils/Web3WalletClient';
+import {web3Global, web3wallet} from '../../utils/Web3WalletClient';
 import {requestToRelayer} from '../../services';
+import client from '../../services/graphql';
+import {formatJsonRpcResult} from '@json-rpc-tools/utils';
 
 interface Props {
   route: any;
@@ -36,9 +38,13 @@ function SessionDetails({route, navigation}: Props) {
     navigation.goBack();
   };
 
+  const showToast = () => {
+    ToastAndroid.show('Remove session success!', ToastAndroid.SHORT);
+  };
+
   const handleRemoveSession = async () => {
     try {
-      const msgData = getCallDataRemoveSession({
+      const msgData: any = getCallDataRemoveSession({
         sessionUser: data.sessionEntity.sessionUser,
       });
       const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
@@ -84,6 +90,7 @@ function SessionDetails({route, navigation}: Props) {
         chainId,
       });
       await requestToRelayer(userOpSignedWeb3);
+      showToast();
       goBack();
     } catch (error) {
       console.log(error, 'error');

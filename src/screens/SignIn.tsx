@@ -12,6 +12,8 @@ import '@ethersproject/shims';
 import CustomInput from '../components/CustomInput/CustomInput';
 import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
+import Card from '../../assets/icons/empty-wallet.svg';
+
 import {ROUTES, STORAGE_KEYS} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Web3 from 'web3';
@@ -40,11 +42,6 @@ interface DeployWalletParam {
   privateKey: string;
   ownerAddress: string;
 }
-const FAKE_WALLET = {
-  address: '0x3a524990De14A46e8Fe2e9ec4cA535012d3EBf0F',
-  privateKey:
-    '0x0d85968fbf5c5cfa1af4271b1fc2477ef73127744dc4da84e2dd8fe4f418d13e',
-};
 
 function SignIn({navigation, setIsSignIn}: Props) {
   const {randomBigNumber} = useNumbers();
@@ -52,7 +49,9 @@ function SignIn({navigation, setIsSignIn}: Props) {
   const [error, setError] = useState<boolean>(false);
   const [signInInfo, setSignInInfo] = useState({
     passcode: '',
+    confirmPasscode: '',
   });
+  const [accountAddress, setAccountAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
   const onChangeSigninInfo = (field: string, value: string) => {
@@ -70,41 +69,57 @@ function SignIn({navigation, setIsSignIn}: Props) {
     privateKey,
     ownerAddress,
   }: DeployWalletParam) => {
-    const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
-    const chainId = await web3.eth.getChainId();
-    const entryPointContract = new web3.eth.Contract(
-      abiEntrypoint,
-      ENV_ENTRY_POINT_ADDRESS,
-    );
+    try {
+      const abiEntrypoint: AbiItem[] | any = entryPointAbi.abi;
+      // const chainId = await web3.eth.getChainId();
+      const entryPointContract = new web3.eth.Contract(
+        abiEntrypoint,
+        ENV_ENTRY_POINT_ADDRESS,
+      );
+      const [chainId, initCode] = await Promise.all([
+        web3.eth.getChainId(),
+        getAccountInitCode(ownerAddress, ENV_FACTORY_ADDRESS, randomBigNumber),
+      ]);
 
-    const initCode = await getAccountInitCode(
-      ownerAddress,
-      ENV_FACTORY_ADDRESS,
-      randomBigNumber,
-    );
+      // const initCode = await getAccountInitCode(
+      //   ownerAddress,
+      //   ENV_FACTORY_ADDRESS,
+      //   randomBigNumber,
+      // );
 
-    const op2 = await fillUserOp(
-      {
-        sender: accountAddress,
-        initCode,
-        maxFeePerGas: '0',
-        maxPriorityFeePerGas: '0',
-        callData: '0x',
-        nonce: 1000,
-      },
-      entryPointContract,
-    );
+      const op2 = await fillUserOp(
+        {
+          sender: accountAddress,
+          initCode,
+          maxFeePerGas: '0',
+          maxPriorityFeePerGas: '0',
+          callData: '0x',
+          nonce: 1000,
+        },
+        entryPointContract,
+      );
 
-    const userOpSignedWeb3 = await signUserOpWeb3({
-      op: {
-        ...op2,
-        nonce: 1000,
-      },
-      privateKey,
-      entryPoint: ENV_ENTRY_POINT_ADDRESS,
-      chainId,
-    });
-    await requestToRelayer(userOpSignedWeb3);
+      const userOpSignedWeb3 = await signUserOpWeb3({
+        op: {
+          ...op2,
+          nonce: 1000,
+        },
+        privateKey,
+        entryPoint: ENV_ENTRY_POINT_ADDRESS,
+        chainId,
+      });
+      console.log(userOpSignedWeb3, 'userOpSignedWeb3');
+
+      await requestToRelayer(userOpSignedWeb3);
+    } catch (error) {
+      console.log(error, 'error relayer');
+    }
+  };
+
+  const convertShortenAddress = (value: string) => {
+    if (value) {
+      return `${value.slice(0, 10)}...${value.slice(-8)}`;
+    }
   };
 
   const handleCreateWallet = async () => {
@@ -124,11 +139,10 @@ function SignIn({navigation, setIsSignIn}: Props) {
     setWeb3Global(web3);
     try {
       if (existWallet) {
-        const addressWallet =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-        const encryptPriKey = await AsyncStorage.getItem(
-          STORAGE_KEYS.ENCRYPT_PRIKEY,
-        );
+        const [addressWallet, encryptPriKey] = await Promise.all([
+          await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS),
+          await AsyncStorage.getItem(STORAGE_KEYS.ENCRYPT_PRIKEY),
+        ]);
 
         const walletDecrypt = web3.eth.accounts.decrypt(
           JSON.parse(encryptPriKey || '{}'),
@@ -139,9 +153,14 @@ function SignIn({navigation, setIsSignIn}: Props) {
           setError(true);
           return;
         }
-        setWalletAddress({walletAddress: addressWallet});
+        setWalletAddress({walletAddress: addressWallet || ''});
+
         setIsSignIn(true);
       } else {
+        if (signInInfo.passcode !== signInInfo.confirmPasscode) {
+          setLoading(false);
+          return;
+        }
         let owner = ethers.Wallet.createRandom();
         const encryptPrikey = web3.eth.accounts.encrypt(
           owner.privateKey,
@@ -159,15 +178,17 @@ function SignIn({navigation, setIsSignIn}: Props) {
         setWalletAddress({walletAddress: accountAddress});
         // check address exist on chain
         const code = await web3.eth.getCode(accountAddress);
-        const notDeployed = code === '0x';
+        await Promise.all([
+          AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress),
+          AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address),
+          AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber),
+          AsyncStorage.setItem(
+            STORAGE_KEYS.ENCRYPT_PRIKEY,
+            JSON.stringify(encryptPrikey),
+          ),
+        ]);
 
-        await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
-        await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
-        await AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber);
-        await AsyncStorage.setItem(
-          STORAGE_KEYS.ENCRYPT_PRIKEY,
-          JSON.stringify(encryptPrikey),
-        );
+        const notDeployed = code === '0x';
         if (notDeployed) {
           await deployWallet({
             accountAddress,
@@ -185,65 +206,13 @@ function SignIn({navigation, setIsSignIn}: Props) {
     setLoading(false);
   };
 
-  const createWalletFake = async () => {
-    const web3 = new Web3(ENV_RPC);
-    setLoading(true);
-    setWeb3Global(web3);
-    if (!signInInfo) {
-      return;
-    }
-    try {
-      const FAKE_CODE = '123';
-      let owner = FAKE_WALLET;
-      const encryptPrikey = web3.eth.accounts.encrypt(
-        owner.privateKey,
-        FAKE_CODE,
-      );
-      const abiFactory: AbiItem[] | any = factoryAbi.abi;
-      const factoryContract = new web3.eth.Contract(
-        abiFactory,
-        ENV_FACTORY_ADDRESS,
-      );
-
-      const accountAddress = await factoryContract.methods
-        .getAddress(owner.address, randomBigNumber)
-        .call();
-      setWalletAddress({walletAddress: accountAddress});
-      // check address exist on chain
-      const code = await web3.eth.getCode(accountAddress);
-      const notDeployed = code === '0x';
-
-      await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS, accountAddress);
-      await AsyncStorage.setItem(STORAGE_KEYS.ADDRESS_OWNER, owner.address);
-      await AsyncStorage.setItem(STORAGE_KEYS.SALT, randomBigNumber);
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.ENCRYPT_PRIKEY,
-        JSON.stringify(encryptPrikey),
-      );
-      setIsSignIn(true);
-      if (notDeployed) {
-        await deployWallet({
-          accountAddress,
-          ownerAddress: owner.address,
-          privateKey: owner.privateKey,
-          web3,
-        });
-      }
-    } catch {
-      setError(true);
-    }
-
-    setLoading(false);
-  };
-
   useEffect(() => {
-    // setIsSignIn(true); // fake
     const checkWallet = async () => {
-      const walletAddress = await AsyncStorage.getItem(
-        STORAGE_KEYS.ADDRESS_OWNER,
-      );
+      const walletAddress =
+        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
       if (walletAddress) {
         setExistWallet(true);
+        setAccountAddress(walletAddress);
       } else {
         setExistWallet(false);
       }
@@ -257,18 +226,43 @@ function SignIn({navigation, setIsSignIn}: Props) {
       <View style={styles.container}>
         <View style={styles.wrap}>
           <Text style={styles.text1}>
-            {existWallet ? 'Welcome back' : 'Create New Account'}
+            {existWallet ? 'Welcome back!' : 'New to Just Wallet?'}
           </Text>
+          {existWallet ? null : (
+            <Text style={styles.note}>
+              Enter your password to set up an account!
+            </Text>
+          )}
+          {existWallet && accountAddress && (
+            <View style={styles.card}>
+              <Card />
+              <Text style={styles.address}>
+                {convertShortenAddress(accountAddress)}
+              </Text>
+            </View>
+          )}
           <View style={styles.wrapInput}>
             <CustomInput
-              placeHolder="Passcode"
+              placeHolder="Password"
               LeftAdornment={LockIcon}
               styles={styles.input}
               isPassword
               setValue={(text: string) => onChangeSigninInfo('passcode', text)}
               value={signInInfo.passcode}
             />
-            {error && <Text style={styles.textError}>Wrong passcode</Text>}
+            {error && <Text style={styles.textError}>Wrong Password</Text>}
+            {existWallet === false && (
+              <CustomInput
+                placeHolder="Re-enter password"
+                LeftAdornment={LockIcon}
+                styles={styles.input}
+                isPassword
+                setValue={(text: string) =>
+                  onChangeSigninInfo('confirmPasscode', text)
+                }
+                value={signInInfo.confirmPasscode}
+              />
+            )}
           </View>
         </View>
         <View style={styles.login}>
@@ -280,29 +274,27 @@ function SignIn({navigation, setIsSignIn}: Props) {
               <ActivityIndicator size="large" />
             ) : (
               <Text style={styles.loginBtn}>
-                {existWallet ? 'Login' : 'Create'}
+                {existWallet ? 'Login' : 'Create account'}
               </Text>
             )}
           </TouchableOpacity>
-          <View style={styles.wrapBottom}>
-            <View style={styles.wrapTextBottom}>
-              <Text style={styles.dontAcc}>Don't have an account?</Text>
-              <Text style={styles.signUp} onPress={onSignUp}>
-                Register
-              </Text>
+          {existWallet && (
+            <View style={styles.wrapBottom}>
+              <View style={styles.wrapTextBottom}>
+                <Text style={styles.dontAcc}>
+                  You want to create new account?
+                </Text>
+                <TouchableOpacity
+                  onPress={async () => {
+                    await AsyncStorage.clear();
+                    setExistWallet(false);
+                  }}>
+                  <Text style={styles.signUp}>Create account</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          )}
         </View>
-
-        {/* ==============Fake btn====================== */}
-        {/* <TouchableOpacity
-          disabled={loading}
-          style={styles.btn}
-          onPress={createWalletFake}>
-          <Text style={styles.loginBtn}>DEMO</Text>
-        </TouchableOpacity> */}
-
-        {/* =================================================== */}
       </View>
     </View>
   );

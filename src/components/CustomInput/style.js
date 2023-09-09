@@ -14,17 +14,19 @@ export const styles = StyleSheet.create({
     backgroundColor: COLOR.neutral_2,
     borderRadius: 8,
     maxWidth: '100%',
+    width: '100%',
   },
   inputLeft: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
+    width: '80%',
   },
   input: {
     backgroundColor: COLOR.neutral_2,
     color: COLOR.light,
-    maxWidth: '100%',
-    fontSize: 18,
+    flex: 1,
+    flexWrap: 'nowrap',
   },
 });

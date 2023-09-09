@@ -14,15 +14,22 @@ interface Props {
 function Sessions({navigation}: Props) {
   const [getSessions, {loading, error, data}] = useLazyQuery(GET_ALL_SESSIONS);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const accountAddress =
-        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-      getSessions({variables: {sender: accountAddress}});
-    };
+  const fetchData = async () => {
+    const accountAddress =
+      (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+    getSessions({variables: {sender: accountAddress}});
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchData();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;

@@ -16,6 +16,13 @@ function Pairing({navigation}: Props) {
     setListPaired(getPairings());
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      setListPaired(getPairings());
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const showEmptyText = () => (
     <Text style={styles.textEmpty}>You haven't paired any apps yet</Text>
   );

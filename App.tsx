@@ -43,7 +43,9 @@ function App(): JSX.Element {
         {initialized ? (
           isSignedIn ? (
             <>
-              <Stack.Screen name={ROUTES.HOME} component={Home} />
+              <Stack.Screen name={ROUTES.HOME}>
+                {props => <Home setIsSignIn={setIsSignIn} {...props} />}
+              </Stack.Screen>
               <Stack.Screen name={ROUTES.SEND} component={Send} />
               <Stack.Screen name={ROUTES_BAR.DETAIL} component={DetailTxn} />
               <Stack.Screen name={ROUTES.CONFIRM} component={Confirm} />

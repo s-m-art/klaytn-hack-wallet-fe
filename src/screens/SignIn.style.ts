@@ -9,6 +9,17 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
   },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  address: {
+    marginLeft: 5,
+  },
+  note: {
+    color: '#6A6E73',
+    fontSize: 16,
+  },
   wrapper: {flex: 1, position: 'relative'},
   container: {
     paddingLeft: 20,
