@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {FlatList, Text, View} from 'react-native';
-import {getPairings} from '../../utils/Web3WalletClient';
+import {useFocusEffect} from '@react-navigation/native';
 
-import styles from '../Sessions/index.style';
+import {getPairings} from '../../utils/Web3WalletClient';
 import PairingItem from './PairingItem';
+import styles from '../Sessions/index.style';
 
 interface Props {
   navigation: any;
@@ -12,16 +13,11 @@ interface Props {
 function Pairing({navigation}: Props) {
   const [listPaired, setListPaired] = useState<any[]>([]);
 
-  useEffect(() => {
-    setListPaired(getPairings());
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+  useFocusEffect(
+    useCallback(() => {
       setListPaired(getPairings());
-    });
-    return unsubscribe;
-  }, [navigation]);
+    }, []),
+  );
 
   const showEmptyText = () => (
     <Text style={styles.textEmpty}>You haven't paired any apps yet</Text>

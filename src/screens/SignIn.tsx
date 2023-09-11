@@ -285,7 +285,7 @@ function SignIn({setIsSignIn}: Props) {
                     await AsyncStorage.clear();
                     setExistWallet(false);
                   }}>
-                  <Text style={styles.signUp}>Create account</Text>
+                  <Text style={styles.signUp}>Register</Text>
                 </TouchableOpacity>
               </View>
             </View>

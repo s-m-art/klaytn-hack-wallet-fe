@@ -1,11 +1,13 @@
-import React, {useEffect} from 'react';
+import React, {useCallback} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import {useLazyQuery} from '@apollo/client';
+import {useFocusEffect} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {GET_ALL_SESSIONS} from '../../services/query';
+import {STORAGE_KEYS} from '../../constants';
 import SessionItem from './SessionItem';
 import styles from './index.style';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {STORAGE_KEYS} from '../../constants';
 import {SessionData} from '../../types';
 
 interface Props {
@@ -17,23 +19,17 @@ function Sessions({navigation}: Props) {
     fetchPolicy: 'no-cache',
   });
 
-  const fetchData = async () => {
-    const accountAddress =
-      (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-    getSessions({variables: {sender: accountAddress.toLowerCase()}});
-    console.log(accountAddress, 'accountAddress');
-  };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const accountAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+        getSessions({variables: {sender: accountAddress}});
+      };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
       fetchData();
-    });
-    return unsubscribe;
-  }, [navigation]);
+    }, []),
+  );
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;

@@ -1,7 +1,7 @@
 import {defaultAbiCoder, hexConcat, keccak256} from 'ethers/lib/utils';
 import {UserOperation} from '../constants/UserOperation';
 import {ethers} from 'ethers';
-import {getCallData} from './UserOp';
+import Web3 from 'web3';
 import {ABI_FUNCTION} from '../abi/index';
 
 export function packUserOp(op: UserOperation, forSignature = true): string {
@@ -146,10 +146,11 @@ export function getAccountInitCode(
   factoryAddress: any,
   salt = '0',
 ): any {
+  const web3 = new Web3();
+
   return hexConcat([
     factoryAddress,
-    getCallData({abiFunction: ABI_FUNCTION.CREATE_ACC, value: [owner, salt]}),
-    // factory.interface.encodeFunctionData('createAccount', [owner, salt]),
+    web3.eth.abi.encodeFunctionCall(ABI_FUNCTION.CREATE_ACC, [owner, salt]),
   ]);
 }
 

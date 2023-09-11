@@ -12,9 +12,11 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   address: {
     marginLeft: 5,
+    color: '#6A6E73',
   },
   note: {
     color: '#6A6E73',
