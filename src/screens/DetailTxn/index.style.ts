@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   textTilte: {
     fontWeight: '400',
@@ -43,6 +44,7 @@ const styles = StyleSheet.create({
   textValue: {
     fontWeight: '600',
     color: '#F8F2EC',
+    fontSize: 12,
   },
 });
 

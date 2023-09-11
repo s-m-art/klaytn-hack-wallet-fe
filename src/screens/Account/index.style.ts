@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     color: '#F8F2EC',
   },
   txnContainer: {
+    flex: 1,
     paddingTop: 24,
     paddingHorizontal: 20,
   },

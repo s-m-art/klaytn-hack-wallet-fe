@@ -20,8 +20,8 @@ const TransactionItem = ({item, navigation, isDetailPage}: Props) => {
       BigNumber(10).pow(BigNumber(18)),
     );
 
-    if (currency === 'klaytn') return price.toString(10);
-    return price.multipliedBy(BigNumber(0.133541)).toString(10);
+    if (currency === 'klaytn') return price.toFormat(10);
+    return price.multipliedBy(BigNumber(0.133541)).toFormat(10);
   };
 
   const renderName = () => {

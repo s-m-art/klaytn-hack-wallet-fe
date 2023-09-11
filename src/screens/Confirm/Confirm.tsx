@@ -3,6 +3,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableHighlight,
   View,
 } from 'react-native';
@@ -41,7 +42,7 @@ const Confirm = ({navigation, route}: Props) => {
   const isConfirmStep = step === STEPS.CONFIRM;
   const [error, setError] = useState(false);
   const {target, amount: amountData} = route.params;
-
+  const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState('');
   const [passcode, setPasscode] = useState('');
   const [toAddress, setToAddress] = useState(target);
@@ -110,30 +111,35 @@ const Confirm = ({navigation, route}: Props) => {
         entryPoint: ENV_ENTRY_POINT_ADDRESS,
         chainId,
       });
-      return {userOpSignedWeb3, entryPointContract, error: null};
+      return {userOpSignedWeb3, error: null};
     } catch (err) {
       setError(true);
       console.log(err);
-      return {userOpSignedWeb3: null, entryPointContract, error: true};
+      return {userOpSignedWeb3: null, error: true};
     }
+  };
+
+  const showToast = () => {
+    ToastAndroid.show('Send success!', ToastAndroid.SHORT);
   };
 
   const handleSubmit = async () => {
     try {
-      const {userOpSignedWeb3, entryPointContract, error}: any =
-        await fetchDataOp();
+      setLoading(true);
+      const {userOpSignedWeb3, error}: any = await fetchDataOp();
       if (error) {
+        setLoading(false);
         return;
       }
       console.log(userOpSignedWeb3, 'userOpSignedWeb3');
 
-      await requestToRelayer(userOpSignedWeb3);
+      const {result} = await requestToRelayer(userOpSignedWeb3);
+      console.log(result, 'result');
 
-      const userOpHash = await entryPointContract.methods
-        .getUserOpHash(userOpSignedWeb3)
-        .call();
-      console.log(userOpHash, 'userOpHash');
-      navigation.navigate(ROUTES_BAR.ACCOUNT);
+      setTimeout(() => {
+        navigation.navigate(ROUTES_BAR.ACCOUNT);
+        showToast();
+      }, 3000);
     } catch (error) {
       console.log(error, 'error');
     }
@@ -220,6 +226,7 @@ const Confirm = ({navigation, route}: Props) => {
       </View>
 
       <ComboBtn
+        disabledConfirm={loading}
         titleCancel={titleCancel}
         titleConfirm={titleConfirm}
         onCancel={handleGoBack}

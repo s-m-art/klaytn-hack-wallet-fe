@@ -31,9 +31,10 @@ const Tab = createBottomTabNavigator();
 
 interface Props {
   navigation: any;
+  setIsSignIn: any;
 }
 
-function Home({navigation}: Props) {
+function Home({navigation, setIsSignIn}: Props) {
   const [approvalModal, setApprovalModal] = useState(false);
   const [signModal, setSignModal] = useState(false);
   const [signTypedDataModal, setSignTypedDataModal] = useState(false);
@@ -163,6 +164,8 @@ function Home({navigation}: Props) {
       const balanceFormat = new BigNumber(balanceData).dividedBy(
         new BigNumber(10).pow(new BigNumber(18)),
       );
+      console.log(balanceFormat, 'balanceFormat');
+
       setBalance(balanceFormat.toFormat(2));
     } catch (error) {
       console.log(error);
@@ -219,7 +222,9 @@ function Home({navigation}: Props) {
         </Tab.Screen>
         <Tab.Screen name={ROUTES_BAR.SESSIONS} component={Sessions} />
         <Tab.Screen name={ROUTES_BAR.PAIRING} component={Pairing} />
-        <Tab.Screen name={ROUTES_BAR.SETTINGS} component={Settings} />
+        <Tab.Screen name={ROUTES_BAR.SETTINGS}>
+          {props => <Settings {...props} setIsSignIn={setIsSignIn} />}
+        </Tab.Screen>
       </Tab.Navigator>
 
       <PairModal

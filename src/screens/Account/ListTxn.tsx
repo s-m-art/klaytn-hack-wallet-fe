@@ -17,14 +17,14 @@ function ListTransactions({navigation}: Props) {
   const [getTransactions, {loading, error, data}] =
     useLazyQuery(GET_ALL_TRANSACTIONS);
 
+  const fetchData = async () => {
+    const accountAddress =
+      (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+    getTransactions({variables: {sender: accountAddress}});
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
-        const accountAddress =
-          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-        getTransactions({variables: {sender: accountAddress}});
-      };
-
       fetchData();
     }, []),
   );
