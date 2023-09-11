@@ -323,11 +323,9 @@ export async function fillUserOp(
   getNonceFunction = 'getNonce',
 ): Promise<UserOperation> {
   const op1 = {...op};
-  console.log(`========xxxxxxxxxxxxxxxxxxx======`);
   const entryPointProvider =
     entryPoint?.provider || entryPoint?.currentProvider;
   const provider = new Web3(entryPointProvider);
-  console.log(`provider:`, {provider});
 
   if (op.initCode != null && op.initCode !== '0x') {
     const initAddr = hexDataSlice(op1.initCode!, 0, 20);
@@ -342,14 +340,12 @@ export async function fillUserOp(
         const salt = hexDataSlice(initCallData, 0, 32);
         op1.sender = Create2Factory.getDeployedAddress(ctr, salt);
       } else {
-        // console.log('\t== not our deployer. our=', Create2Factory.contractAddress, 'got', initAddr)
         if (provider == null) throw new Error('no entrypoint/provider');
         op1.sender = await entryPoint!.callStatic
           .getSenderAddress(op1.initCode!)
           .catch((e: {errorArgs: {sender: any}}) => e.errorArgs.sender);
       }
     }
-    console.log(`========xxxxyyyyyyyyyyyyxxxxx======`);
 
     if (op1.verificationGasLimit == null) {
       if (provider == null) throw new Error('no entrypoint/provider');
@@ -367,7 +363,6 @@ export async function fillUserOp(
       ).add(initEstimate);
     }
   }
-  console.log(`========zzzzzzzzzzzzzzzzzzzz======`);
 
   if (op1.nonce == null) {
     if (provider == null)
@@ -424,9 +419,7 @@ export async function fillAndSign(
   getNonceFunction = 'getNonce',
 ): Promise<UserOperation> {
   const provider = entryPoint?.provider;
-  console.log(`=======================`);
   const op2 = await fillUserOp(op, entryPoint, getNonceFunction);
-  console.log(`xxxxop2:`, {op2});
   const chainId = await provider!
     .getNetwork()
     .then((net: {chainId: any}) => net.chainId);
@@ -437,9 +430,6 @@ export async function fillAndSign(
     signature: await signer.signMessage(message),
   };
 }
-
-export const getCallData = ({abiFunction, value}: any) =>
-  web3.eth.abi.encodeFunctionCall(abiFunction, value);
 
 export const getCallDataEntryPoint = ({value, target, msgDataEncode}: any) => {
   const msgData = web3.eth.abi.encodeFunctionCall(

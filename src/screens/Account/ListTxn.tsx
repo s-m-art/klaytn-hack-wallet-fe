@@ -1,12 +1,13 @@
-import React, {useEffect} from 'react';
+import React, {useCallback} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import {useLazyQuery} from '@apollo/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useFocusEffect} from '@react-navigation/native';
 
 import {GET_ALL_TRANSACTIONS} from '../../services/query';
+import {STORAGE_KEYS} from '../../constants';
 import TransactionItem from './TransactionItem';
 import styles from './index.style';
-import {STORAGE_KEYS} from '../../constants';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props {
   navigation: any;
@@ -16,18 +17,20 @@ function ListTransactions({navigation}: Props) {
   const [getTransactions, {loading, error, data}] =
     useLazyQuery(GET_ALL_TRANSACTIONS);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const accountAddress =
-        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-      getTransactions({variables: {sender: accountAddress}});
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const accountAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+        getTransactions({variables: {sender: accountAddress}});
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }, []),
+  );
 
   if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error! {error.message}</Text>;
+  if (error) return <Text style={styles.textExp}>Error! {error.message}</Text>;
 
   const showEmptyText = () => (
     <Text style={styles.textEmpty}>You don't have any transactions</Text>

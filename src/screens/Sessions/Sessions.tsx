@@ -1,11 +1,13 @@
-import React, {useEffect} from 'react';
+import React, {useCallback} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import {useLazyQuery} from '@apollo/client';
+import {useFocusEffect} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {GET_ALL_SESSIONS} from '../../services/query';
+import {STORAGE_KEYS} from '../../constants';
 import SessionItem from './SessionItem';
 import styles from './index.style';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {STORAGE_KEYS} from '../../constants';
 
 interface Props {
   navigation: any;
@@ -14,15 +16,17 @@ interface Props {
 function Sessions({navigation}: Props) {
   const [getSessions, {loading, error, data}] = useLazyQuery(GET_ALL_SESSIONS);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const accountAddress =
-        (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-      getSessions({variables: {sender: accountAddress}});
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const accountAddress =
+          (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
+        getSessions({variables: {sender: accountAddress}});
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }, []),
+  );
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;
