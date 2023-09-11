@@ -46,6 +46,7 @@ const GET_ALL_SESSIONS = gql`
       id
       startFrom
       validUntil
+      deleted
     }
   }
 `;

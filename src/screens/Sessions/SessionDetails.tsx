@@ -1,9 +1,15 @@
 import React, {useState} from 'react';
-import {Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import BigNumber from 'bignumber.js';
 import Header from '../../components/Header/Header';
 import {useQuery} from '@apollo/client';
-import {GET_SESSION, GET_TXN_HASH} from '../../services/query';
+import {GET_SESSION} from '../../services/query';
 import SessionItem from './SessionItem';
 import styles from './index.style';
 import {SESSION_TYPES, STORAGE_KEYS} from '../../constants';
@@ -15,10 +21,8 @@ import {getCallDataRemoveSession, signUserOpWeb3} from '../../utils/signUserOp';
 import {fillUserOp} from '../../utils/UserOp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ENV_ENTRY_POINT_ADDRESS} from '@env';
-import {web3Global, web3wallet} from '../../utils/Web3WalletClient';
+import {web3Global} from '../../utils/Web3WalletClient';
 import {requestToRelayer} from '../../services';
-import client from '../../services/graphql';
-import {formatJsonRpcResult} from '@json-rpc-tools/utils';
 
 interface Props {
   route: any;
@@ -29,7 +33,7 @@ function SessionDetails({route, navigation}: Props) {
   const {sessionId, status} = route.params;
   const [passcode, setPasscode] = useState('');
   const [errorPasscode, setErrorPassCode] = useState(false);
-
+  const [loadingSend, setLoadingSend] = useState(false);
   const {loading, error, data} = useQuery(GET_SESSION, {
     variables: {sessionId},
   });
@@ -44,6 +48,7 @@ function SessionDetails({route, navigation}: Props) {
 
   const handleRemoveSession = async () => {
     try {
+      setLoadingSend(true);
       const msgData: any = getCallDataRemoveSession({
         sessionUser: data.sessionEntity.sessionUser,
       });
@@ -89,11 +94,14 @@ function SessionDetails({route, navigation}: Props) {
         entryPoint: ENV_ENTRY_POINT_ADDRESS,
         chainId,
       });
-      await requestToRelayer(userOpSignedWeb3);
+      const {result} = await requestToRelayer(userOpSignedWeb3);
+      console.log(result, 'result');
       showToast();
       goBack();
     } catch (error) {
       console.log(error, 'error');
+    } finally {
+      setLoadingSend(false);
     }
   };
 
@@ -176,13 +184,18 @@ function SessionDetails({route, navigation}: Props) {
         placeholderTextColor={'#6A6E73'}
         placeholder="passcode"
         style={styles.input}
+        secureTextEntry
         value={passcode}
         onChangeText={setPasscode}
       />
       {errorPasscode && <Text>Wrong passcode</Text>}
-      <TouchableOpacity onPress={handleRemoveSession}>
+      <TouchableOpacity disabled={loadingSend} onPress={handleRemoveSession}>
         <View style={styles.btnRemove}>
-          <Text style={styles.textRemove}>Remove</Text>
+          {loadingSend ? (
+            <ActivityIndicator size="large" color="#fff" />
+          ) : (
+            <Text style={styles.textRemove}>Remove</Text>
+          )}
         </View>
       </TouchableOpacity>
     </View>

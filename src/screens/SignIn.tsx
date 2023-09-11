@@ -14,7 +14,7 @@ import LockIcon from '../../assets/icons/lock.svg';
 import Bg from '../../assets/icons/login-bg.png';
 import Card from '../../assets/icons/empty-wallet.svg';
 
-import {ROUTES, STORAGE_KEYS} from '../constants';
+import {STORAGE_KEYS} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Web3 from 'web3';
 import useNumbers from '../hooks/useNumbers';
@@ -43,7 +43,7 @@ interface DeployWalletParam {
   ownerAddress: string;
 }
 
-function SignIn({navigation, setIsSignIn}: Props) {
+function SignIn({setIsSignIn}: Props) {
   const {randomBigNumber} = useNumbers();
   const [existWallet, setExistWallet] = useState<boolean | null>(null);
   const [error, setError] = useState<boolean>(false);
@@ -57,10 +57,6 @@ function SignIn({navigation, setIsSignIn}: Props) {
   const onChangeSigninInfo = (field: string, value: string) => {
     setSignInInfo(prev => ({...prev, [field]: value}));
     setError(false);
-  };
-
-  const onSignUp = () => {
-    navigation.navigate(ROUTES.SIGN_UP);
   };
 
   const deployWallet = async ({

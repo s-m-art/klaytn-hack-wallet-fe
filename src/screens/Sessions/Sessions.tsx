@@ -6,18 +6,22 @@ import SessionItem from './SessionItem';
 import styles from './index.style';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {STORAGE_KEYS} from '../../constants';
+import {SessionData} from '../../types';
 
 interface Props {
   navigation: any;
 }
 
 function Sessions({navigation}: Props) {
-  const [getSessions, {loading, error, data}] = useLazyQuery(GET_ALL_SESSIONS);
+  const [getSessions, {loading, error, data}] = useLazyQuery(GET_ALL_SESSIONS, {
+    fetchPolicy: 'no-cache',
+  });
 
   const fetchData = async () => {
     const accountAddress =
       (await AsyncStorage.getItem(STORAGE_KEYS.ADDRESS)) || '';
-    getSessions({variables: {sender: accountAddress}});
+    getSessions({variables: {sender: accountAddress.toLowerCase()}});
+    console.log(accountAddress, 'accountAddress');
   };
 
   useEffect(() => {
@@ -38,14 +42,15 @@ function Sessions({navigation}: Props) {
     <Text style={styles.textEmpty}>You don't have any sessions</Text>
   );
 
-  const sessions = data?.sessionEntities;
+  const sessions: SessionData[] = data?.sessionEntities || [];
+  console.log(sessions, 'sessions');
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>List Sessions</Text>
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={sessions}
+        data={sessions.filter(item => !item.deleted)}
         renderItem={({item}) => (
           <SessionItem key={item.id} item={item} navigation={navigation} />
         )}

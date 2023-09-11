@@ -2,6 +2,7 @@ type SessionData = {
   id: string;
   startFrom: string;
   validUntil: string;
+  deleted: boolean;
 };
 
 type Transaction = {

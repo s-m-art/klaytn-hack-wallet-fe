@@ -118,7 +118,9 @@ export function SendTransactionModal({
           chainId,
         });
 
-        await requestToRelayer(userOpSignedWeb3);
+        const {result} = await requestToRelayer(userOpSignedWeb3);
+        console.log(result, 'result');
+
         const userOpHash = await entryPointContract.methods
           .getUserOpHash(userOpSignedWeb3)
           .call();

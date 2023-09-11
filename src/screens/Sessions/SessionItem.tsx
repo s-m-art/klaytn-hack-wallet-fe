@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import {Image, Text, TouchableOpacity, View} from 'react-native';
 
 import styles from '../Account/index.style';
@@ -62,6 +62,10 @@ const TxnItem = ({item, navigation, isDetailPage}: Props) => {
     ) : (
       <View>{children}</View>
     );
+
+  if (item.deleted) {
+    return <Fragment />;
+  }
 
   return (
     <WrapForm>
